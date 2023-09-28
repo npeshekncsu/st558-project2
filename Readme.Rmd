@@ -15,10 +15,11 @@ Vignettes are explanations of some concept, package, etc. with text, code, and o
 
 ### Packages
 
-```{r}
+```{r, message=FALSE, warning=FALSE}
 library(httr)
 library(dplyr)
 library(tibble)
+library(jsonlite)
 ```
 
 
