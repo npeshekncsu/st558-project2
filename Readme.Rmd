@@ -22,33 +22,35 @@ library(tibble)
 library(jsonlite)
 ```
 
+```{r}
+key = '97d5c2b8-7656-4974-827e-9d59486f7777'
+```
+
 
 Function to get states for the provided country.
 
 ```{r}
-get_states <- function(country) {
+get_states <- function(country, api_key = key) {
   url = 'http://api.airvisual.com/v2/states'
-  key = '97d5c2b8-7656-4974-827e-9d59486f7777'
-  
-  resp = GET(url, query = list(key = key, 
-                             country = country))
+  resp = GET(url, query = list(key = api_key, 
+                               country = country))
   parsed = fromJSON(rawToChar(resp$content))
-  return (as.list(parsed$data))
+  
+  return (as.list(parsed$data)$state)
 }
 ```
 
 Function to get cities for the provided country and state
 
 ```{r}
-get_cities <- function(country, state) {
+get_cities <- function(country, state, api_key = key) {
   url = 'http://api.airvisual.com/v2/cities'
-  key = '97d5c2b8-7656-4974-827e-9d59486f7777'
   
-  resp = GET(url, query = list(key = key, 
-                             country = country,
-                             state = state))
+  resp = GET(url, query = list(key = api_key, 
+                               country = country,
+                               state = state))
   parsed = fromJSON(rawToChar(resp$content))
-  return (as.list(parsed$data))
+  return (as.list(parsed$data)$city)
 }
 ```
 
@@ -58,23 +60,21 @@ get_air_quality_per_city <- function(country,
                                      state, 
                                      city = NULL,
                                      weather_metrics = TRUE,
-                                     sample_size = 5) {
+                                     sample_size = 5,
+                                     api_key = key) {
   
   results = tibble()
   url = 'http://api.airvisual.com/v2/city'
-  key = '97d5c2b8-7656-4974-827e-9d59486f7777'
-  
+ 
   if (is.null(city)) {
     cities = get_cities(country, state)
-    print(length(cities$city))
   
-    if (length(cities$city) > sample_size) {
-      print(length(cities))
+    if (length(cities) > sample_size) {
       set.seed(123)
-      cities$city = sample(cities$city, size = sample_size)
+      cities = sample(cities, size = sample_size)
     }
     
-    for (city in cities$city) {
+    for (city in cities) {
       Sys.sleep(15)
       resp = GET(url, query = list(key = key, 
                                    country = country,
@@ -129,67 +129,79 @@ get_air_quality_per_city <- function(country,
       print(subset_df)
       results <- bind_rows(results, subset_df)
   }
-  
-  #cities = get_cities(country, state)
-  #print(length(cities$city))
-  
-  #if (length(cities$city) > sample_size) {
-  #  print(length(cities))
-  #  cities$city = sample(cities$city, size = sample_size)
-  #}
-  
-  #for (city in cities$city) {
-
-    #Sys.sleep(15)
-    #resp = GET(url, query = list(key = key, 
-    #                             country = country,
-    #                             state = state,
-    #                             city = city))
-    #parsed = fromJSON(rawToChar(resp$content))
-    #print(parsed)
-    
-    #subset_df = tibble(aqius = parsed$data$current$pollution$aqius, 
-    #               aqicn = parsed$data$current$pollution$aqicn, 
-    #               city = parsed$data$city,
-    #               state = parsed$data$state,
-    #               country = parsed$data$country,
-    #               temp_cels = parsed$data$current$weather$tp,
-    #               humidity = parsed$data$current$weather$hu, 
-    #               wind_speed = parsed$data$current$weather$ws,
-    #               atm_pressure = parsed$data$current$weather$pr
-    #               )
-    #print(subset_df)
-    #results <- bind_rows(results, subset_df)
-
-  #}
   return (results)
 }
-
-#cities = get_cities('France', 'Brittany')
-
-#states = get_states('France')
-#res = get_air_quality_per_city ('France', 'Brittany')
-#get_air_quality_per_state('China')
-
 ```
-
 
 
 
 ```{r}
 
+get_air_quality_per_country <- function(country, 
+                                        weather_metrics = TRUE,
+                                        sample_size = 5,
+                                        api_key = key) {
+  
+  results = tibble()
+  url = 'http://api.airvisual.com/v2/city'
+  
+  
+  states = get_states(country, api_key = key)
+  
+  set.seed(1)
+  states = sample(states, size = sample_size)
+  print(states)
+  
+  
+  for (state in states) {
+    cities = get_cities(country, state, api_key = key)
+    set.seed(1)
+    city = sample(cities, size = 1)
+    
+    Sys.sleep(15)
+    resp = GET(url, query = list(key = api_key, 
+                                 country = country,
+                                 state = state,
+                                 city = city))
+    parsed = fromJSON(rawToChar(resp$content))
+    subset_df = tibble(aqius = parsed$data$current$pollution$aqius, 
+                       aqicn = parsed$data$current$pollution$aqicn, 
+                       city = parsed$data$city,
+                       state = parsed$data$state,
+                       country = parsed$data$country,
+                       temp_cels = parsed$data$current$weather$tp,
+                       humidity = parsed$data$current$weather$hu, 
+                       wind_speed = parsed$data$current$weather$ws,
+                       atm_pressure = parsed$data$current$weather$pr)
+    results <- bind_rows(results, subset_df)
+  }
+  return (results)
+}
 
-res_usa_cal =  get_air_quality_per_city (country = 'USA', state = 'California', city = 'Diablo', sample_size = 1, weather_metrics = FALSE)
 ```
 
 
-
+```{r}
+res_usa_cal =  get_air_quality_per_city (country = 'USA', state = 'California', sample_size = 3)
+```
 ```{r}
 res_usa_cal
 ```
 
 
+```{r}
+#res_usa_cal
 
+#states = get_states('USA')
+
+t = get_air_quality_per_country(country = 'USA', sample_size = 2)
+t
+```
+
+
+```{r}
+states
+```
 
 
 
