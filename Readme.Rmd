@@ -51,7 +51,6 @@ get_cities <- function(country, state, api_key = key) {
   resp = GET(url, query = list(key = api_key, 
                                country = country,
                                state = state))
-  print(resp)
   parsed = fromJSON(rawToChar(resp$content))
   return (as.list(parsed$data)$city)
 }
@@ -102,7 +101,6 @@ get_air_quality_per_city <- function(country,
                            state = parsed$data$state,
                            country = parsed$data$country)
       }
-      print(subset_df)
       results <- bind_rows(results, subset_df)
     
   }
@@ -129,7 +127,6 @@ get_air_quality_per_city <- function(country,
                            state = parsed$data$state,
                            country = parsed$data$country)
       }
-      print(subset_df)
       results <- bind_rows(results, subset_df)
   }
   return (results)
@@ -320,4 +317,118 @@ ggplot(all, aes(x = temp_cels, y = aqius)) +
   labs(title = "Temperature vs AQIUS",  # Main title
        x = "Temperature, Celsius",              # X-axis label
        y = "AQIUS")  
+```
+
+
+### Looking at USA states
+
+
+```{r}
+air_california = get_air_quality_per_city(country = 'USA', state = 'California', sample_size = 5)
+air_california
+```
+
+```{r}
+air_colorado = get_air_quality_per_city(country = 'USA', state = 'Colorado', sample_size = 5)
+air_colorado
+```
+
+```{r}
+air_minnesota = get_air_quality_per_city(country = 'USA', state = 'Minnesota', sample_size = 5)
+air_minnesota
+```
+
+```{r}
+air_florida = get_air_quality_per_city(country = 'USA', state = 'Florida', sample_size = 5)
+air_florida
+```
+
+
+
+```{r}
+air_michigan = get_air_quality_per_city(country = 'USA', state = 'Michigan', sample_size = 5)
+air_michigan
+```
+```{r}
+all_per_state = bind_rows(air_michigan, air_florida, air_minnesota, air_colorado, air_california)
+```
+
+
+
+```{r}
+all_per_state <- all_per_state %>%
+  mutate(aqius_category = case_when(
+    aqius < 50 ~ "good",
+    aqius >= 50 & aqius <= 100 ~ "moderate",
+    aqius > 100 ~ "unhealthy"
+  )) %>%
+  mutate(aqicn_category = case_when(
+    aqius < 50 ~ "excellent",
+    aqius >= 50 & aqius <= 100 ~ "good",
+    aqius > 100 ~ "polluted"
+  )) %>%
+  mutate(humidity_category = case_when(
+    humidity <= 40 ~ 'low',
+    humidity > 40 & humidity <= 60 ~ 'normal',
+    humidity > 60 ~ 'high'
+  ))
+all_per_state 
+```
+
+
+```{r}
+table(all_per_state$aqius_category, all_per_state$state)
+table(all_per_state$aqicn_category, all_per_state$state)
+table(all_per_state$aqius_category, all_per_state$humidity_category)
+```
+
+```{r}
+result <- all_per_state %>%
+  group_by(state) %>%
+  summarize(mean_aqius = mean(aqius), mean_aqicn = mean(aqicn)) 
+result
+```
+```{r}
+all_per_state
+```
+```{r}
+ggplot(all_per_state, aes(x = wind_speed, y = aqius)) +
+  geom_point() +                  # Add scatter points
+  geom_smooth(method = "lm",      # Add a linear regression line
+              formula = y ~ x,    # Regression formula
+              se = TRUE) +      # Don't display confidence interval
+  labs(title = "Temperature vs AQIUS",  # Main title
+       x = "Wind speed",              # X-axis label
+       y = "AQIUS")  
+```
+
+
+```{r}
+ggplot(all_per_state, aes(x = temp_cels, y = aqius)) +
+  geom_point() +                  # Add scatter points
+  geom_smooth(method = "lm",      # Add a linear regression line
+              formula = y ~ x,    # Regression formula
+              se = TRUE) +      # Don't display confidence interval
+  labs(title = "Temperature vs AQIUS",  # Main title
+       x = "Temperature",              # X-axis label
+       y = "AQIUS")  
+```
+
+
+```{r}
+ggplot(all_per_state, aes(x = humidity, y = aqius)) +
+  geom_point() +                  # Add scatter points
+  geom_smooth(method = "lm",      # Add a linear regression line
+              formula = y ~ x,    # Regression formula
+              se = TRUE) +      # Don't display confidence interval
+  labs(title = "Temperature vs AQIUS",  # Main title
+       x = "Humidity",              # X-axis label
+       y = "AQIUS")  
+```
+
+```{r}
+ggplot(all_per_state, aes(x = state, y = aqius, fill = state)) +
+  geom_boxplot() +
+  labs(title = "AQIUS per state", x = "State", y = "AQIUS") +
+  theme_minimal()
 ```
