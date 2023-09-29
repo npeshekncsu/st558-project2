@@ -12,6 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Overall Goal
 
 Vignettes are explanations of some concept, package, etc. with text, code, and output interweaved. Our goal with this project is to create a vignette about contacting an API using functions you’ve created to query, parse, and return well-structured data. 
+API endpoint used https://www.iqair.com/dashboard/api
 
 ### Packages
 
@@ -20,6 +21,7 @@ library(httr)
 library(dplyr)
 library(tibble)
 library(jsonlite)
+library(ggplot2)
 ```
 
 ```{r}
@@ -49,6 +51,7 @@ get_cities <- function(country, state, api_key = key) {
   resp = GET(url, query = list(key = api_key, 
                                country = country,
                                state = state))
+  print(resp)
   parsed = fromJSON(rawToChar(resp$content))
   return (as.list(parsed$data)$city)
 }
@@ -148,14 +151,14 @@ get_air_quality_per_country <- function(country,
   
   states = get_states(country, api_key = key)
   
-  set.seed(1)
+  set.seed(2)
   states = sample(states, size = sample_size)
-  print(states)
   
   
   for (state in states) {
+    Sys.sleep(15)
     cities = get_cities(country, state, api_key = key)
-    set.seed(1)
+    set.seed(4)
     city = sample(cities, size = 1)
     
     Sys.sleep(15)
@@ -190,29 +193,131 @@ res_usa_cal
 
 
 ```{r}
-#res_usa_cal
-
-#states = get_states('USA')
-
 t = get_air_quality_per_country(country = 'USA', sample_size = 2)
 t
 ```
 
+## Exploratory Data Analysis
+
+
+Let's look at air pollution for different countries across the globe: China, USA, France, India, Kenya.
 
 ```{r}
-states
+air_usa = get_air_quality_per_country(country = 'USA', sample_size = 3)
+```
+
+```{r}
+air_usa
 ```
 
 
 
 
+```{r}
+air_china = get_air_quality_per_country(country = 'China', sample_size = 3)
+```
+
+```{r}
+air_china
+```
+
+```{r}
+air_poland = get_air_quality_per_country(country = 'Poland', sample_size = 3)
+air_poland
+```
 
 
 
+```{r}
+air_australia = get_air_quality_per_country(country = 'Australia', sample_size = 3)
+air_australia
+```
+
+
+```{r}
 
 
 
+all = bind_rows(air_australia, air_poland, air_china, air_usa)
+
+
+all <- all %>%
+  mutate(aqius_category = case_when(
+    aqius < 50 ~ "good",
+    aqius >= 50 & aqius <= 100 ~ "moderate",
+    aqius > 100 ~ "unhealthy"
+  )) %>%
+  mutate(aqicn_category = case_when(
+    aqius < 50 ~ "excellent",
+    aqius >= 50 & aqius <= 100 ~ "good",
+    aqius > 100 ~ "polluted"
+  )) %>%
+  mutate(humidity_category = case_when(
+    humidity <= 40 ~ 'low',
+    humidity > 40 & humidity <= 60 ~ 'normal',
+    humidity > 60 ~ 'high'
+  ))
+
+ all 
+  
+```
+
+```{r}
+table(all$aqius_category, all$country)
+table(all$aqicn_category, all$country)
+table(all$aqius_category, all$humidity_category)
+```
+
+```{r}
+result <- all %>%
+  group_by(country) %>%
+  summarize(mean_aqius = mean(aqius), mean_aqicn = mean(aqicn)) 
+result
+```
 
 
 
+```{r}
 
+ggplot(result, aes(x = country, y = mean_aqius)) +
+  geom_bar(stat = "identity", fill = "blue", alpha = 0.5) +
+  labs(title = "Means of AQIUS per country", x = "Country", y = "Mean of AQUIS")
+
+
+ggplot(result, aes(x = country, y = mean_aqicn)) +
+  geom_bar(stat = "identity", fill = "red", alpha = 0.5) +
+  labs(title = "Means of AQICN per country", x = "Country", y = "Mean of AQUCN")
+```
+
+```{r}
+ggplot(all, aes(x = country, y = aqius, fill = country)) +
+  geom_boxplot() +
+  labs(title = "AQIUS per country", x = "Country", y = "AQIUS") +
+  theme_minimal()
+```
+
+```{r}
+#library(heatmaply)
+
+data <- as.matrix(all %>% select(aqius, aqicn, temp_cels, humidity, wind_speed, atm_pressure))
+#data
+# Default Heatmap
+heatmap(data, col = heat.colors(10),  Colv = NA, Rowv = NA, scale="column")
+#legend(
+#  "topright",             # Legend position
+#  legend = c("Low", "High"),  # Legend labels
+#  fill = heat.colors(2),      # Colors for the legend
+#  title = "Legend"            # Legend title
+#)
+```
+
+```{r}
+ggplot(all, aes(x = temp_cels, y = aqius)) +
+  geom_point() +                  # Add scatter points
+  geom_smooth(method = "lm",      # Add a linear regression line
+              formula = y ~ x,    # Regression formula
+              se = TRUE) +      # Don't display confidence interval
+  labs(title = "Temperature vs AQIUS",  # Main title
+       x = "Temperature, Celsius",              # X-axis label
+       y = "AQIUS")  
+```
