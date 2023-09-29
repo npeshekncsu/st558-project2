@@ -76,7 +76,23 @@ get_cities <- function(country, state, api_key = key) {
 }
 ```
 
-Function to return air quality based on the `country`, `state` and `city`. If `city` is not provided, random sample of the size `sample_size` will be chosen from the cities which belong to the `state`. If `weather_metrics = TRUE` in addition to air quality metrics, weather conditions like, temperature, humidity, wind speed and pressure will be returned. 
+Function returns air quality based on the `country`, `state` and `city`. If `city` is not provided, random sample of the size `sample_size` will be chosen from the cities which belong to the `state`. If `weather_metrics = TRUE` in addition to air quality metrics, weather metrics like, temperature, humidity, wind speed and pressure will be returned. 
+
+Functions returns data frame in `tibble` format with following columns:
+
+  - `country`
+  - `state`
+  - `city`
+  - `aqius` - AQI value based on US EPA standard
+  - `aqicn` - AQI value based on China MEP standard
+
+If  `weather_metrics = TRUE` in addition to the columns above, function also returns:
+
+
+  - `temp_cels` - temperature in Celsius
+  - `humidity` - humidity %
+  - `wind_speed` - wind speed (m/s)
+  - `atm_pressure` - atmospheric pressure in hPa
 
 
 ```{r}
@@ -99,7 +115,7 @@ get_air_quality_per_city <- function(country,
     }
     
     for (city in cities) {
-      Sys.sleep(15)
+      Sys.sleep(15) # required to avoid error - too many requests
       resp = GET(url, query = list(key = key, 
                                    country = country,
                                    state = state,
@@ -156,6 +172,21 @@ get_air_quality_per_city <- function(country,
 ```
 
 
+Function returns air quality and weather metrics based on the country name. Random sample of the size `sample_size` is thrown from from the states which belongs to the country. For each state, random city is selected and metrics returned.
+
+
+Functions returns data frame in `tibble` format with following columns:
+
+  - `country`
+  - `state`
+  - `city`
+  - `aqius` - AQI value based on US EPA standard
+  - `aqicn` - AQI value based on China MEP standard
+  - `temp_cels` - temperature in Celsius
+  - `humidity` - humidity %
+  - `wind_speed` - wind speed (m/s)
+  - `atm_pressure` - atmospheric pressure in hPa
+
 
 ```{r}
 get_air_quality_per_country <- function(country, 
@@ -174,12 +205,12 @@ get_air_quality_per_country <- function(country,
   
   
   for (state in states) {
-    Sys.sleep(15)
+    Sys.sleep(15) # required to avoid error - too many requests
     cities = get_cities(country, state, api_key = key)
     set.seed(4)
     city = sample(cities, size = 1)
     
-    Sys.sleep(15)
+    Sys.sleep(15) # required to avoid error - too many requests
     resp = GET(url, query = list(key = api_key, 
                                  country = country,
                                  state = state,
@@ -201,62 +232,36 @@ get_air_quality_per_country <- function(country,
 ```
 
 
-```{r}
-res_usa_cal =  get_air_quality_per_city (country = 'USA', state = 'California', sample_size = 3)
-```
-
-```{r}
-res_usa_cal
-```
-
-
-```{r}
-t = get_air_quality_per_country(country = 'USA', sample_size = 2)
-t
-```
-
 ## Exploratory Data Analysis
+
+### EDA for countries
 
 
 Let's look at air pollution for different countries across the globe: China, USA, France, India, Kenya.
 
 ```{r}
-air_usa = get_air_quality_per_country(country = 'USA', sample_size = 3)
-```
-
-```{r}
-air_usa
-```
-
-
-
-
-```{r}
-air_china = get_air_quality_per_country(country = 'China', sample_size = 3)
-```
-
-```{r}
-air_china
-```
-
-```{r}
-air_poland = get_air_quality_per_country(country = 'Poland', sample_size = 3)
-air_poland
-```
-
-
-
-```{r}
-air_australia = get_air_quality_per_country(country = 'Australia', sample_size = 3)
-air_australia
+sample = 5
+air_usa = get_air_quality_per_country(country = 'USA', sample_size = sample)
+air_china = get_air_quality_per_country(country = 'China', sample_size = sample)
+air_poland = get_air_quality_per_country(country = 'Poland', sample_size = sample)
+air_australia = get_air_quality_per_country(country = 'Australia', sample_size = sample)
+air_norway = get_air_quality_per_country(country = 'Norway', sample_size = sample)
 ```
 
 
 ```{r}
+all = bind_rows(air_australia, air_poland, air_china, air_usa, air_norway)
+```
 
 
 
-all = bind_rows(air_australia, air_poland, air_china, air_usa)
+
+
+
+
+
+```{r}
+#all = bind_rows(air_australia, air_poland, air_china, air_usa)
 
 
 all <- all %>%
@@ -277,7 +282,6 @@ all <- all %>%
   ))
 
  all 
-  
 ```
 
 ```{r}
@@ -341,7 +345,7 @@ ggplot(all, aes(x = temp_cels, y = aqius)) +
 ```
 
 
-### Looking at USA states
+### EDA for the US states
 
 
 ```{r}
