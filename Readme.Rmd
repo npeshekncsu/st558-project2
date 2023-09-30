@@ -237,7 +237,9 @@ get_air_quality_per_country <- function(country,
 ### EDA for countries
 
 
-Let's look at air pollution for different countries across the globe: China, USA, France, India, Kenya.
+Let's look at air pollution and weather metrics for different countries across the globe. Chosen countries: China, USA, Poland, Australia, Norway.
+
+*Note: Sample size and set of countries chosen to be small due to API limitations and time required to render the whole document* 
 
 ```{r}
 sample = 5
@@ -248,22 +250,28 @@ air_australia = get_air_quality_per_country(country = 'Australia', sample_size =
 air_norway = get_air_quality_per_country(country = 'Norway', sample_size = sample)
 ```
 
+Combine all obtained data frames together in one data frame.
 
 ```{r}
 all = bind_rows(air_australia, air_poland, air_china, air_usa, air_norway)
 ```
 
+Let's look at data frame with combined records:
+```{r}
+all
+```
 
+Now, we need to create categorical variables for `aqius`, `aqicn` and `humidity`. 
 
+If `aqius` value is less than **50**, the air quality is considered to be `good`. If `aqius` value is greater or equal **50** and less or equal **100**,  the air quality is considered to be `moderate`. If `aquis` value is greater than **100**, the air quality is considered `unhealthy`.
 
+If `aqicn` value is less than **50**, the air quality is considered to be `excellent`, if `aqicn` value is greater or equal **50** and lees or equal **100**, the air quality is considered to be `good`.  If `aqicn` value is greater than **100**, the air quality is considered `polluted`.
 
+If `humidity` level is less or equal **40%**, it is considered `low`. If `humidity` level is greater than **40%** and less than or equal to **60%**, it is considered `normal`. If `humidity` is greater than **60%**, it is considered `high`.
 
-
+Creating new categorical variables based on the rules outlined above and displaying updated data frame.
 
 ```{r}
-#all = bind_rows(air_australia, air_poland, air_china, air_usa)
-
-
 all <- all %>%
   mutate(aqius_category = case_when(
     aqius < 50 ~ "good",
@@ -271,24 +279,45 @@ all <- all %>%
     aqius > 100 ~ "unhealthy"
   )) %>%
   mutate(aqicn_category = case_when(
-    aqius < 50 ~ "excellent",
-    aqius >= 50 & aqius <= 100 ~ "good",
-    aqius > 100 ~ "polluted"
+    aqicn < 50 ~ "excellent",
+    aqicn >= 50 & aqicn <= 100 ~ "good",
+    aqicn > 100 ~ "polluted"
   )) %>%
   mutate(humidity_category = case_when(
     humidity <= 40 ~ 'low',
     humidity > 40 & humidity <= 60 ~ 'normal',
     humidity > 60 ~ 'high'
   ))
-
  all 
 ```
 
+Create 2-way contingency table for `aqius_category` vs `country`.
+
 ```{r}
 table(all$aqius_category, all$country)
+```
+
+
+Create 2-way contingency table for `aqicn_category` vs `country`.
+
+```{r}
 table(all$aqicn_category, all$country)
+```
+
+Create 2-way contingency table for `aqius_category` vs `humidity_category`.
+
+```{r}
 table(all$aqius_category, all$humidity_category)
 ```
+
+
+Create 2-way contingency table for `aqicn_category` vs `humidity_category`.
+
+```{r}
+table(all$aqicn_category, all$humidity_category)
+```
+
+Group by `country` and calculate `aqius` mean and `aqicn` mean for each group.
 
 ```{r}
 result <- all %>%
@@ -298,18 +327,22 @@ result
 ```
 
 
+Visualizing obtained results for `aqius`.
 
 ```{r}
-
 ggplot(result, aes(x = country, y = mean_aqius)) +
   geom_bar(stat = "identity", fill = "blue", alpha = 0.5) +
   labs(title = "Means of AQIUS per country", x = "Country", y = "Mean of AQUIS")
+```
 
+Visualizing obtained results for `aqicn`.
 
+```{r}
 ggplot(result, aes(x = country, y = mean_aqicn)) +
   geom_bar(stat = "identity", fill = "red", alpha = 0.5) +
   labs(title = "Means of AQICN per country", x = "Country", y = "Mean of AQUCN")
 ```
+Creating box plot for `aqius` per `country`.
 
 ```{r}
 ggplot(all, aes(x = country, y = aqius, fill = country)) +
@@ -317,20 +350,11 @@ ggplot(all, aes(x = country, y = aqius, fill = country)) +
   labs(title = "AQIUS per country", x = "Country", y = "AQIUS") +
   theme_minimal()
 ```
+Creating heatmap
 
 ```{r}
-#library(heatmaply)
-
 data <- as.matrix(all %>% select(aqius, aqicn, temp_cels, humidity, wind_speed, atm_pressure))
-#data
-# Default Heatmap
 heatmap(data, col = heat.colors(10),  Colv = NA, Rowv = NA, scale="column")
-#legend(
-#  "topright",             # Legend position
-#  legend = c("Low", "High"),  # Legend labels
-#  fill = heat.colors(2),      # Colors for the legend
-#  title = "Legend"            # Legend title
-#)
 ```
 
 ```{r}
