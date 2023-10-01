@@ -26,6 +26,7 @@ library(dplyr)
 library(tibble)
 library(jsonlite)
 library(ggplot2)
+library(RColorBrewer)
 ```
 
 
@@ -34,6 +35,7 @@ library(ggplot2)
   - `tibble` - required for formatting data frame
   - `jsonlite` - required for converting JSON data from/to R objects
   - `ggplot2` - required for creating graphs
+  - `RColorBrewer` - provides color schemes for maps
   
 
 Define variable for API key required for the authentication during HTTP request:
@@ -291,18 +293,21 @@ all <- all %>%
  all 
 ```
 
+*Note: in the following sections I will be doing EDA and results interpretation. Given the data, I am retrieving every time I render document, is real time data, it could be some discrepancies between values and I my interpretation, but I will try my best to be consistent with values and interpretation.*
+
 Create 2-way contingency table for `aqius_category` vs `country`.
 
 ```{r}
 table(all$aqius_category, all$country)
 ```
-
+As it could be seen from the table above, `China` has at least one city with `unhealthy` air based on `aqius` values. All sampled cities for `Australia` and `Norway` have `good` air quality. 
 
 Create 2-way contingency table for `aqicn_category` vs `country`.
 
 ```{r}
 table(all$aqicn_category, all$country)
 ```
+Based on the `aqicn` values, all selected cities for all countries, except `China` have `excellent` air quality.
 
 Create 2-way contingency table for `aqius_category` vs `humidity_category`.
 
@@ -317,14 +322,21 @@ Create 2-way contingency table for `aqicn_category` vs `humidity_category`.
 table(all$aqicn_category, all$humidity_category)
 ```
 
-Group by `country` and calculate `aqius` mean and `aqicn` mean for each group.
+Based on the two tables above, the most observations for the `excellent` and `good` air quality are for the `high` humidity level.
+
+
+Now, let's group by `country` and calculate `aqius` mean and `aqicn` mean for each group.
 
 ```{r}
 result <- all %>%
   group_by(country) %>%
-  summarize(mean_aqius = mean(aqius), mean_aqicn = mean(aqicn)) 
+  summarize(mean_aqius = mean(aqius), 
+            mean_aqicn = mean(aqicn), 
+            sd_aquis = sd(aqius),
+            sd_aqicn = sd(aqicn)) 
 result
 ```
+Based on the values above, `China` has the highest values for `aqius` and `aqicn`, while `Australia` has the lowest values for `aqius` and `aqicn`. 
 
 
 Visualizing obtained results for `aqius`.
@@ -332,7 +344,7 @@ Visualizing obtained results for `aqius`.
 ```{r}
 ggplot(result, aes(x = country, y = mean_aqius)) +
   geom_bar(stat = "identity", fill = "blue", alpha = 0.5) +
-  labs(title = "Means of AQIUS per country", x = "Country", y = "Mean of AQUIS")
+  labs(title = "Means of AQIUS per country", x = "Country", y = "Mean of AQIUS")
 ```
 
 Visualizing obtained results for `aqicn`.
@@ -342,64 +354,69 @@ ggplot(result, aes(x = country, y = mean_aqicn)) +
   geom_bar(stat = "identity", fill = "red", alpha = 0.5) +
   labs(title = "Means of AQICN per country", x = "Country", y = "Mean of AQUCN")
 ```
-Creating box plot for `aqius` per `country`.
+
+The graphs above shows means for the `aqius` and `aqicn`. `China` has the highest values for `aqius` and `aqicn`, while `Australia` has the lowest values for `aqius` and `aqicn`.
+
+Let's look at `aqius` distribution for each country. Creating box plot for `aqius` per `country`.
 
 ```{r}
 ggplot(all, aes(x = country, y = aqius, fill = country)) +
   geom_boxplot() +
-  labs(title = "AQIUS per country", x = "Country", y = "AQIUS") +
+  labs(title = "AQIUS values distribution per country", x = "Country", y = "AQIUS") +
   theme_minimal()
 ```
-Creating heatmap
+Creating heatmap for numerical variables
 
 ```{r}
 data <- as.matrix(all %>% select(aqius, aqicn, temp_cels, humidity, wind_speed, atm_pressure))
-heatmap(data, col = heat.colors(10),  Colv = NA, Rowv = NA, scale="column")
+heatmap(data,
+        Rowv=NA,
+        Colv=NA, 
+        labCol=colnames(data), 
+        col= colorRampPalette(brewer.pal(8, "Oranges"))(25), 
+        scale="column",
+        main="Heatmap for numerical variables")
+legend(x="bottomright", legend=c("min", "ave", "max"), 
+     fill=colorRampPalette(brewer.pal(8, "Oranges"))(3))
 ```
+Let's check if there are any linear dependency between current temperature and observed `aquis` values.
 
 ```{r}
 ggplot(all, aes(x = temp_cels, y = aqius)) +
-  geom_point() +                  # Add scatter points
-  geom_smooth(method = "lm",      # Add a linear regression line
-              formula = y ~ x,    # Regression formula
-              se = TRUE) +      # Don't display confidence interval
-  labs(title = "Temperature vs AQIUS",  # Main title
-       x = "Temperature, Celsius",              # X-axis label
+  geom_point() +          
+  geom_smooth(method = "lm",
+              formula = y ~ x,
+              se = TRUE) +
+  labs(title = "Temperature vs AQIUS",
+       x = "Temperature, Celsius",
        y = "AQIUS")  
 ```
+
+As, it could be seen from the graph above, there are might be some relationship between temperature and observed `aquis` values. The higher the temperature, the higher the `aquis` values.
+
 
 
 ### EDA for the US states
 
+Now, let's look at several states across `USA` and compare air quality. Chosen states: California, Colorado, Minnesota, Florida and Michigan. Sample size for each state is equal to `5`.
+
+
+Reading data for each state using function `get_air_quality_per_city`:
 
 ```{r}
-air_california = get_air_quality_per_city(country = 'USA', state = 'California', sample_size = 5)
-air_california
+sample = 5
+air_california = get_air_quality_per_city(country = 'USA', state = 'California', sample_size = sample)
+air_colorado = get_air_quality_per_city(country = 'USA', state = 'Colorado', sample_size = sample)
+air_minnesota = get_air_quality_per_city(country = 'USA', state = 'Minnesota', sample_size = sample)
+air_florida = get_air_quality_per_city(country = 'USA', state = 'Florida', sample_size = sample)
+air_michigan = get_air_quality_per_city(country = 'USA', state = 'Michigan', sample_size = sample)
 ```
 
-```{r}
-air_colorado = get_air_quality_per_city(country = 'USA', state = 'Colorado', sample_size = 5)
-air_colorado
-```
+Combine results in one data frame:
 
-```{r}
-air_minnesota = get_air_quality_per_city(country = 'USA', state = 'Minnesota', sample_size = 5)
-air_minnesota
-```
-
-```{r}
-air_florida = get_air_quality_per_city(country = 'USA', state = 'Florida', sample_size = 5)
-air_florida
-```
-
-
-
-```{r}
-air_michigan = get_air_quality_per_city(country = 'USA', state = 'Michigan', sample_size = 5)
-air_michigan
-```
 ```{r}
 all_per_state = bind_rows(air_michigan, air_florida, air_minnesota, air_colorado, air_california)
+all_per_state
 ```
 
 
