@@ -380,6 +380,15 @@ legend(x="bottomright", legend=c("min", "ave", "max"),
      fill=colorRampPalette(brewer.pal(8, "Oranges"))(3))
 ```
 
+Let's looks at correlation matrix for all numerical variables.
+
+```{r}
+cor(data)
+```
+
+From the matrix above, it could be seen that there are some positive linear correlation between `aqius` and `atm_pressure`, `aqius` and `temp_cels`, `aqicn` and `temp_cels`, `aqicn` and `atm_pressure`.  There are some negative linear correlation between `aqius` and `wind_speed`, `aqicn` and `humidity`, `aqicn` and `wind_speed`.
+
+
 Let's check if there are any linear dependency between current temperature and observed `aquis` values.
 
 ```{r}
@@ -474,6 +483,16 @@ Create 2-way contingency table for `aqicn_category` vs `humidity_category`.
 table(all_per_state$aqicn_category, all_per_state$humidity_category)
 ```
 
+Let's looks at correlation matrix for all numerical variables.
+
+```{r}
+data <- as.matrix(all_per_state %>% select(aqius, aqicn, temp_cels, humidity, wind_speed, atm_pressure))
+cor(data)
+```
+
+From the matrix above, it could be seen that there are some positive linear correlation between `aqius` and `atm_pressure`, `aqius` and `temp_cels`, `aqius` and `humidity`, `aqicn` and `temp_cels`, `aqicn` and `atm_pressure`, `aqicn` and `humidity`.  There are some negative linear correlation between `aqius` and `wind_speed`, `aqicn` and `wind_speed`.
+
+
 Now, let's group by `state` and calculate `aqius` mean, `aqicn` mean and standard deviations for each group.
 
 ```{r}
@@ -485,6 +504,8 @@ result <- all_per_state %>%
             sd_aqicn = sd(aqicn)) 
 result
 ```
+
+
 
 Let's check if there are any linear dependency between wind speed and observed `aquis` values.
 
@@ -535,7 +556,7 @@ ggplot(all_per_state, aes(x = humidity, y = aqius)) +
 As it could be seen from the graph above, there is may be some linear relationship between humidity levels and `aqius` values. The higher the humidity, the higher the `aquis` values.
 
 
-Let's look at `aqius` distribution for each `state`.  Creating box plot for `aqius` per `state`.
+Let's look at `aqius` distribution for each `state`. Creating box plot for `aqius` per `state`.
 
 ```{r}
 ggplot(all_per_state, aes(x = state, y = aqius, fill = state)) +
@@ -545,4 +566,8 @@ ggplot(all_per_state, aes(x = state, y = aqius, fill = state)) +
 ```
 
 ## Summary
+
+At this project we created functions to query **IQAir APIs** to retrieve data quality and weather metrics per country, state and city. Due to free account limitations, small samples were derived for several countries across the globe and several states across the United States.  For both data frames EDA was conducted. The EDA showed that:
+
+  - 
 
