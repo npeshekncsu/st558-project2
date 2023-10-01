@@ -325,7 +325,7 @@ table(all$aqicn_category, all$humidity_category)
 Based on the two tables above, the most observations for the `excellent` and `good` air quality are for the `high` humidity level.
 
 
-Now, let's group by `country` and calculate `aqius` mean and `aqicn` mean for each group.
+Now, let's group by `country` and calculate `aqius` mean, `aqicn` mean and standard deviations for each group.
 
 ```{r}
 result <- all %>%
@@ -379,6 +379,7 @@ heatmap(data,
 legend(x="bottomright", legend=c("min", "ave", "max"), 
      fill=colorRampPalette(brewer.pal(8, "Oranges"))(3))
 ```
+
 Let's check if there are any linear dependency between current temperature and observed `aquis` values.
 
 ```{r}
@@ -398,7 +399,7 @@ As, it could be seen from the graph above, there are might be some relationship 
 
 ### EDA for the US states
 
-Now, let's look at several states across `USA` and compare air quality. Chosen states: California, Colorado, Minnesota, Florida and Michigan. Sample size for each state is equal to `5`.
+Now, let's look at several states across `USA` and compare air quality. Chosen states: *California*, *Colorado*, *Minnesota*, *Florida* and *Michigan*. Sample size for each state is equal to `5`.
 
 
 Reading data for each state using function `get_air_quality_per_city`:
@@ -420,6 +421,7 @@ all_per_state
 ```
 
 
+Now, let's use the same rules as outlined above, to create categorical variables `aqius_category`, `aqicn_category` and `humidity_category` and display updated data frame.
 
 ```{r}
 all_per_state <- all_per_state %>%
@@ -442,55 +444,98 @@ all_per_state
 ```
 
 
+Create 2-way contingency table for `aqius_category` vs `state`.
+
+
 ```{r}
 table(all_per_state$aqius_category, all_per_state$state)
+```
+
+
+Create 2-way contingency table for `aqicn_category` vs `state`.
+
+```{r}
 table(all_per_state$aqicn_category, all_per_state$state)
+```
+
+
+Create 2-way contingency table for `aqius_category` vs `humidity_category`.
+
+
+```{r}
 table(all_per_state$aqius_category, all_per_state$humidity_category)
 ```
+
+
+Create 2-way contingency table for `aqicn_category` vs `humidity_category`.
+
+
+```{r}
+table(all_per_state$aqicn_category, all_per_state$humidity_category)
+```
+
+Now, let's group by `state` and calculate `aqius` mean, `aqicn` mean and standard deviations for each group.
 
 ```{r}
 result <- all_per_state %>%
   group_by(state) %>%
-  summarize(mean_aqius = mean(aqius), mean_aqicn = mean(aqicn)) 
+  summarize(mean_aqius = mean(aqius), 
+            mean_aqicn = mean(aqicn), 
+            sd_aquis = sd(aqius),
+            sd_aqicn = sd(aqicn)) 
 result
 ```
-```{r}
-all_per_state
-```
+
+Let's check if there are any linear dependency between wind speed and observed `aquis` values.
+
+
 ```{r}
 ggplot(all_per_state, aes(x = wind_speed, y = aqius)) +
-  geom_point() +                  # Add scatter points
-  geom_smooth(method = "lm",      # Add a linear regression line
-              formula = y ~ x,    # Regression formula
-              se = TRUE) +      # Don't display confidence interval
-  labs(title = "Temperature vs AQIUS",  # Main title
-       x = "Wind speed",              # X-axis label
+  geom_point() +                 
+  geom_smooth(method = "lm", 
+              formula = y ~ x,
+              se = TRUE) + 
+  labs(title = "Temperature vs AQIUS", 
+       x = "Wind speed",
        y = "AQIUS")  
 ```
 
+  As it could be seen from the graph, the stronger the wind, the lower the `aqius` values. 
+
+
+Let's check if there are any linear dependency between temperature and observed `aquis` values.  
 
 ```{r}
 ggplot(all_per_state, aes(x = temp_cels, y = aqius)) +
-  geom_point() +                  # Add scatter points
-  geom_smooth(method = "lm",      # Add a linear regression line
-              formula = y ~ x,    # Regression formula
-              se = TRUE) +      # Don't display confidence interval
-  labs(title = "Temperature vs AQIUS",  # Main title
-       x = "Temperature",              # X-axis label
+  geom_point() + 
+  geom_smooth(method = "lm", 
+              formula = y ~ x,
+              se = TRUE) + 
+  labs(title = "Temperature vs AQIUS", 
+       x = "Temperature", 
        y = "AQIUS")  
 ```
 
+As it could be seen from the graph above, the higher the temperature, the higher `aqius` values.
+
+
+Let's check if there are any linear dependency between humidity level and observed `aquis` values. 
 
 ```{r}
 ggplot(all_per_state, aes(x = humidity, y = aqius)) +
-  geom_point() +                  # Add scatter points
-  geom_smooth(method = "lm",      # Add a linear regression line
-              formula = y ~ x,    # Regression formula
-              se = TRUE) +      # Don't display confidence interval
-  labs(title = "Temperature vs AQIUS",  # Main title
-       x = "Humidity",              # X-axis label
-       y = "AQIUS")  
+  geom_point() + 
+  geom_smooth(method = "lm",
+              formula = y ~ x, 
+              se = TRUE) + 
+  labs(title = "Humidity vs AQIUS", 
+       x = "Humidity",
+       y = "AQIUS") 
 ```
+
+As it could be seen from the graph above, there is may be some linear relationship between humidity levels and `aqius` values. The higher the humidity, the higher the `aquis` values.
+
+
+Let's look at `aqius` distribution for each `state`.  Creating box plot for `aqius` per `state`.
 
 ```{r}
 ggplot(all_per_state, aes(x = state, y = aqius, fill = state)) +
@@ -498,3 +543,6 @@ ggplot(all_per_state, aes(x = state, y = aqius, fill = state)) +
   labs(title = "AQIUS per state", x = "State", y = "AQIUS") +
   theme_minimal()
 ```
+
+## Summary
+
