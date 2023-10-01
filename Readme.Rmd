@@ -460,12 +460,14 @@ Create 2-way contingency table for `aqius_category` vs `state`.
 table(all_per_state$aqius_category, all_per_state$state)
 ```
 
+Based on the table above, Michigan has 4 states out of 5 with `moderate` air quality. California, Colorado and Florida have all 5 cities with `good` air quality. 
 
 Create 2-way contingency table for `aqicn_category` vs `state`.
 
 ```{r}
 table(all_per_state$aqicn_category, all_per_state$state)
 ```
+Based on the table above, Michigan has 4 states out of 5 with `good` air quality.
 
 
 Create 2-way contingency table for `aqius_category` vs `humidity_category`.
@@ -474,7 +476,7 @@ Create 2-way contingency table for `aqius_category` vs `humidity_category`.
 ```{r}
 table(all_per_state$aqius_category, all_per_state$humidity_category)
 ```
-
+Most of the observations with `good` air quality are from observations with `high` humidity. 
 
 Create 2-way contingency table for `aqicn_category` vs `humidity_category`.
 
@@ -482,6 +484,7 @@ Create 2-way contingency table for `aqicn_category` vs `humidity_category`.
 ```{r}
 table(all_per_state$aqicn_category, all_per_state$humidity_category)
 ```
+Most of the observations with `exellent` air quality are from observations with `high` humidity. 
 
 Let's looks at correlation matrix for all numerical variables.
 
@@ -569,5 +572,6 @@ ggplot(all_per_state, aes(x = state, y = aqius, fill = state)) +
 
 At this project we created functions to query **IQAir APIs** to retrieve data quality and weather metrics per country, state and city. Due to free account limitations, small samples were derived for several countries across the globe and several states across the United States.  For both data frames EDA was conducted. The EDA showed that:
 
-  - 
+  - there are negative linear correlation between wind speed and air quality
+  - air quality is better when humidity level is high
 
