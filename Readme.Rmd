@@ -13,8 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Overall Goal
 
-Vignettes are explanations of some concept, package, etc. with text, code, and output interweaved. Our goal with this project is to create a vignette about contacting an [IQAir APIs](https://www.iqair.com/dashboard/api) using custom functions to query, parse, and return well-structured data.  IQAir APIs provide information about **real time air quality data**.
-API endpoint used https://www.iqair.com/dashboard/api
+Vignettes are explanations of some concept, package, etc. with text, code, and output interweaved. Our goal with this project is to create a vignette about contacting an [IQAir APIs](https://www.iqair.com/dashboard/api) using custom functions to query, parse, and return well-structured data.  IQAir APIs provide information about **real time air quality data and weather metrics**.
 
 ## Packages
 
@@ -49,6 +48,7 @@ key = '97d5c2b8-7656-4974-827e-9d59486f7777'
 
 This section is dedicated for helper functions required for HTTP requests. 
 
+
 ### Get states function
 
 Function to retrieve `states` based on the `country` name. States returned as a list.
@@ -64,6 +64,7 @@ get_states <- function(country, api_key = key) {
   return (as.list(parsed$data)$state)
 }
 ```
+
 
 ### Get cities function
 
@@ -82,11 +83,17 @@ get_cities <- function(country, state, api_key = key) {
 }
 ```
 
-### Get air quality and weather metrics based on country, state and city
 
-Function returns air quality based on the `country`, `state` and `city`. If `city` is not provided, random sample of the size `sample_size` will be chosen from the cities which belong to the `state`. If `weather_metrics = TRUE` in addition to air quality metrics, weather metrics like, temperature, humidity, wind speed and pressure will be returned. 
+### Get air quality and weather metrics based on country, state and city function
 
-Functions returns data frame in `tibble` format with following columns:
+Function returns air quality based on the `country`, `state` and `city`. 
+
+If `city` is not provided, random sample of the size `sample_size` will be chosen from the cities which belong to the `state`. 
+
+
+If `weather_metrics = TRUE` in addition to air quality metrics, weather metrics like, temperature, humidity, wind speed and pressure will be returned. 
+
+Function returns data frame in `tibble` format with following columns:
 
   - `country`
   - `state`
@@ -180,7 +187,7 @@ get_air_quality_per_city <- function(country,
 ```
 
 
-### Get air quality and weather metrics for country
+### Get air quality and weather metrics for country function
 
 Function returns air quality and weather metrics based on the country name. Random sample of the size `sample_size` is thrown from from the states which belongs to the country. For each state, random city is selected and metrics returned.
 
@@ -247,7 +254,7 @@ get_air_quality_per_country <- function(country,
 ### EDA for countries
 
 
-Let's look at air pollution and weather metrics for different countries across the globe. Chosen countries: China, USA, Poland, Australia, Norway.
+Let's look at air quality and weather metrics for different countries across the globe. Chosen countries: China, USA, Poland, Australia, Norway.
 
 *Note: Sample size and set of countries chosen to be small due to API limitations and time required to render the whole document* 
 
@@ -301,7 +308,7 @@ all <- all %>%
  all 
 ```
 
-*Note: in the following sections I will be doing EDA and results interpretation. Given the data, I am retrieving every time I render document, is real time data, it could be some discrepancies between values and I my interpretation, but I will try my best to be consistent with values and interpretation.*
+*Note: in the following sections I will be doing EDA and results interpretation. Given the data, I am retrieving every time I render the document, is real time data, it could be some discrepancies between observed values and I my interpretation, but I will try my best to be consistent with values and interpretation.*
 
 Create 2-way contingency table for `aqius_category` vs `country`.
 
@@ -598,5 +605,7 @@ At this project we created functions to query **IQAir APIs** to retrieve data qu
 
   - there are negative linear correlation between wind speed and air quality
   - air quality is better when humidity level is high
-  - air quality is deacresing when atmospheric pressure is increasing.
+  - air quality is decreasing when atmospheric pressure is increasing.
+  
+
 
