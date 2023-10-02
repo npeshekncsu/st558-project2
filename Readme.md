@@ -1,27 +1,11 @@
 ST-558, Project 2
 ================
 Nataliya Peshekhodko
-2023-09-30
+2023-10-01
 
-- <a
-  href="#1-vignette-for-reading-and-summarizing-data-from-an-iqair-apis"
-  id="toc-1-vignette-for-reading-and-summarizing-data-from-an-iqair-apis">1
-  Vignette for reading and summarizing data from an IQAir APIs</a>
-  - <a href="#11-overall-goal" id="toc-11-overall-goal">1.1 Overall Goal</a>
-  - <a href="#12-packages" id="toc-12-packages">1.2 Packages</a>
-  - <a href="#13-functions-for-reading-data-from-iqair-apis"
-    id="toc-13-functions-for-reading-data-from-iqair-apis">1.3 Functions for
-    reading data from IQAir APIs</a>
-  - <a href="#14-exploratory-data-analysis"
-    id="toc-14-exploratory-data-analysis">1.4 Exploratory Data Analysis</a>
-    - <a href="#141-eda-for-countries" id="toc-141-eda-for-countries">1.4.1
-      EDA for countries</a>
-    - <a href="#142-eda-for-the-us-states"
-      id="toc-142-eda-for-the-us-states">1.4.2 EDA for the US states</a>
+# Vignette for reading and summarizing data from an IQAir APIs
 
-# 1 Vignette for reading and summarizing data from an IQAir APIs
-
-## 1.1 Overall Goal
+## Overall Goal
 
 Vignettes are explanations of some concept, package, etc. with text,
 code, and output interweaved. Our goal with this project is to create a
@@ -31,7 +15,7 @@ query, parse, and return well-structured data. IQAir APIs provide
 information about **real time air quality data**. API endpoint used
 <https://www.iqair.com/dashboard/api>
 
-## 1.2 Packages
+## Packages
 
 Packages required to run code included in that analysis:
 
@@ -58,10 +42,12 @@ request:
 key = '97d5c2b8-7656-4974-827e-9d59486f7777'
 ```
 
-## 1.3 Functions for reading data from IQAir APIs
+## Functions for reading data from IQAir APIs
 
 This section is dedicated for helper functions required for HTTP
 requests.
+
+### Get states function
 
 Function to retrieve `states` based on the `country` name. States
 returned as a list.
@@ -77,6 +63,8 @@ get_states <- function(country, api_key = key) {
 }
 ```
 
+### Get cities function
+
 Function to get `cities` based on the provided `country` and `state`.
 Cities returned as a list.
 
@@ -91,6 +79,8 @@ get_cities <- function(country, state, api_key = key) {
   return (as.list(parsed$data)$city)
 }
 ```
+
+### Get air quality and weather metrics based on country, state and city
 
 Function returns air quality based on the `country`, `state` and `city`.
 If `city` is not provided, random sample of the size `sample_size` will
@@ -191,6 +181,8 @@ get_air_quality_per_city <- function(country,
 }
 ```
 
+### Get air quality and weather metrics for country
+
 Function returns air quality and weather metrics based on the country
 name. Random sample of the size `sample_size` is thrown from from the
 states which belongs to the country. For each state, random city is
@@ -251,9 +243,9 @@ get_air_quality_per_country <- function(country,
 }
 ```
 
-## 1.4 Exploratory Data Analysis
+## Exploratory Data Analysis
 
-### 1.4.1 EDA for countries
+### EDA for countries
 
 Let’s look at air pollution and weather metrics for different countries
 across the globe. Chosen countries: China, USA, Poland, Australia,
@@ -283,20 +275,20 @@ Let’s look at data frame with combined records:
 all
 ```
 
-    ## # A tibble: 25 × 9
-    ##    aqius aqicn city           state             country   temp_cels humidity wind_speed atm_pressure
-    ##    <int> <int> <chr>          <chr>             <chr>         <int>    <int>      <dbl>        <int>
-    ##  1     4     1 Mount Barker   South Australia   Australia        16       60       3.1          1015
-    ##  2    24    27 West Footscray Victoria          Australia        20       47       8.75         1012
-    ##  3     8     8 Scottsdale     Tasmania          Australia        18       62       7.37          999
-    ##  4     4     1 Forrest        ACT               Australia        27       22      11.8          1010
-    ##  5     5     6 Geraldton      Western Australia Australia        21       60       4.12         1017
-    ##  6    37    13 Trzebnica      Lower Silesia     Poland            9       86       0.89         1024
-    ##  7    17     6 Goldap         Warmia-Masuria    Poland           10       92       5.04         1019
-    ##  8    53    20 Lublin         Lublin            Poland           11       85       3.6          1022
-    ##  9    35    13 Wloszczowa     Swietokrzyskie    Poland            8       81       2.65         1025
-    ## 10    39    24 Warsaw         Mazovia           Poland           11       78       1.54         1022
-    ## # ℹ 15 more rows
+    ## # A tibble: 24 × 9
+    ##    aqius aqicn city     state country temp_cels humidity wind_speed atm_pressure
+    ##    <int> <int> <chr>    <chr> <chr>       <int>    <int>      <dbl>        <int>
+    ##  1    28    31 West Fo… Vict… Austra…        21       38      10.3          1015
+    ##  2     9    10 Scottsd… Tasm… Austra…        16       53       3.49         1017
+    ##  3     8     3 Forrest  ACT   Austra…        19       60       3.09         1021
+    ##  4    19    21 Joondal… West… Austra…        15       62       5.81         1013
+    ##  5    21     7 Trzebni… Lowe… Poland         15       73       0.45         1023
+    ##  6    21     7 Goldap   Warm… Poland          8       96       2.44         1021
+    ##  7    38    13 Lukow    Lubl… Poland         10       75       2.93         1023
+    ##  8    24    10 Wloszcz… Swie… Poland          9       66       1.93         1024
+    ##  9    47    31 Warsaw   Mazo… Poland         11       81       1.54         1022
+    ## 10    29    17 Yushu    Qing… China           7       80       0.75         1014
+    ## # ℹ 14 more rows
 
 Now, we need to create categorical variables for `aqius`, `aqicn` and
 `humidity`.
@@ -340,20 +332,22 @@ all <- all %>%
  all 
 ```
 
-    ## # A tibble: 25 × 12
-    ##    aqius aqicn city         state country temp_cels humidity wind_speed atm_pressure aqius_category aqicn_category humidity_category
-    ##    <int> <int> <chr>        <chr> <chr>       <int>    <int>      <dbl>        <int> <chr>          <chr>          <chr>            
-    ##  1     4     1 Mount Barker Sout… Austra…        16       60       3.1          1015 good           excellent      normal           
-    ##  2    24    27 West Footsc… Vict… Austra…        20       47       8.75         1012 good           excellent      normal           
-    ##  3     8     8 Scottsdale   Tasm… Austra…        18       62       7.37          999 good           excellent      high             
-    ##  4     4     1 Forrest      ACT   Austra…        27       22      11.8          1010 good           excellent      low              
-    ##  5     5     6 Geraldton    West… Austra…        21       60       4.12         1017 good           excellent      normal           
-    ##  6    37    13 Trzebnica    Lowe… Poland          9       86       0.89         1024 good           excellent      high             
-    ##  7    17     6 Goldap       Warm… Poland         10       92       5.04         1019 good           excellent      high             
-    ##  8    53    20 Lublin       Lubl… Poland         11       85       3.6          1022 moderate       excellent      high             
-    ##  9    35    13 Wloszczowa   Swie… Poland          8       81       2.65         1025 good           excellent      high             
-    ## 10    39    24 Warsaw       Mazo… Poland         11       78       1.54         1022 good           excellent      high             
-    ## # ℹ 15 more rows
+    ## # A tibble: 24 × 12
+    ##    aqius aqicn city     state country temp_cels humidity wind_speed atm_pressure
+    ##    <int> <int> <chr>    <chr> <chr>       <int>    <int>      <dbl>        <int>
+    ##  1    28    31 West Fo… Vict… Austra…        21       38      10.3          1015
+    ##  2     9    10 Scottsd… Tasm… Austra…        16       53       3.49         1017
+    ##  3     8     3 Forrest  ACT   Austra…        19       60       3.09         1021
+    ##  4    19    21 Joondal… West… Austra…        15       62       5.81         1013
+    ##  5    21     7 Trzebni… Lowe… Poland         15       73       0.45         1023
+    ##  6    21     7 Goldap   Warm… Poland          8       96       2.44         1021
+    ##  7    38    13 Lukow    Lubl… Poland         10       75       2.93         1023
+    ##  8    24    10 Wloszcz… Swie… Poland          9       66       1.93         1024
+    ##  9    47    31 Warsaw   Mazo… Poland         11       81       1.54         1022
+    ## 10    29    17 Yushu    Qing… China           7       80       0.75         1014
+    ## # ℹ 14 more rows
+    ## # ℹ 3 more variables: aqius_category <chr>, aqicn_category <chr>,
+    ## #   humidity_category <chr>
 
 *Note: in the following sections I will be doing EDA and results
 interpretation. Given the data, I am retrieving every time I render
@@ -369,8 +363,8 @@ table(all$aqius_category, all$country)
 
     ##           
     ##            Australia China Norway Poland USA
-    ##   good             5     2      5      4   3
-    ##   moderate         0     3      0      1   2
+    ##   good             4     1      5      5   5
+    ##   moderate         0     4      0      0   0
 
 As it could be seen from the table above, `China` has at least one city
 with `unhealthy` air based on `aqius` values. All sampled cities for
@@ -384,7 +378,8 @@ table(all$aqicn_category, all$country)
 
     ##            
     ##             Australia China Norway Poland USA
-    ##   excellent         5     5      5      5   5
+    ##   excellent         4     3      5      5   5
+    ##   good              0     2      0      0   0
 
 Based on the `aqicn` values, all selected cities for all countries,
 except `China` have `excellent` air quality.
@@ -398,8 +393,8 @@ table(all$aqius_category, all$humidity_category)
 
     ##           
     ##            high low normal
-    ##   good       13   3      3
-    ##   moderate    5   1      0
+    ##   good       16   1      3
+    ##   moderate    2   1      1
 
 Create 2-way contingency table for `aqicn_category` vs
 `humidity_category`.
@@ -410,13 +405,14 @@ table(all$aqicn_category, all$humidity_category)
 
     ##            
     ##             high low normal
-    ##   excellent   18   4      3
+    ##   excellent   18   1      3
+    ##   good         0   1      1
 
 Based on the two tables above, the most observations for the `excellent`
 and `good` air quality are for the `high` humidity level.
 
-Now, let’s group by `country` and calculate `aqius` mean and `aqicn`
-mean for each group.
+Now, let’s group by `country` and calculate `aqius` mean, `aqicn` mean
+and standard deviations for each group.
 
 ``` r
 result <- all %>%
@@ -431,11 +427,11 @@ result
     ## # A tibble: 5 × 5
     ##   country   mean_aqius mean_aqicn sd_aquis sd_aqicn
     ##   <chr>          <dbl>      <dbl>    <dbl>    <dbl>
-    ## 1 Australia        9          8.6     8.54    10.7 
-    ## 2 China           49.2       27.8    15.0     11.5 
-    ## 3 Norway           9.4        4.2     7.83     2.95
-    ## 4 Poland          36.2       15.2    12.9      6.98
-    ## 5 USA             45.2       21      25.1     12.5
+    ## 1 Australia       16         16.2     9.42    12.3 
+    ## 2 China           56.2       36.6    17.0     19.9 
+    ## 3 Norway          18.4        8      14.2      6.71
+    ## 4 Poland          30.2       13.6    11.7     10.0 
+    ## 5 USA             24.8        8.6    16.1      5.32
 
 Based on the values above, `China` has the highest values for `aqius`
 and `aqicn`, while `Australia` has the lowest values for `aqius` and
@@ -449,7 +445,7 @@ ggplot(result, aes(x = country, y = mean_aqius)) +
   labs(title = "Means of AQIUS per country", x = "Country", y = "Mean of AQIUS")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-84-1.png)<!-- -->
+![](Readme_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
 
 Visualizing obtained results for `aqicn`.
 
@@ -459,7 +455,7 @@ ggplot(result, aes(x = country, y = mean_aqicn)) +
   labs(title = "Means of AQICN per country", x = "Country", y = "Mean of AQUCN")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-85-1.png)<!-- -->
+![](Readme_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
 
 The graphs above shows means for the `aqius` and `aqicn`. `China` has
 the highest values for `aqius` and `aqicn`, while `Australia` has the
@@ -475,7 +471,7 @@ ggplot(all, aes(x = country, y = aqius, fill = country)) +
   theme_minimal()
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-86-1.png)<!-- --> Creating
+![](Readme_files/figure-gfm/unnamed-chunk-18-1.png)<!-- --> Creating
 heatmap for numerical variables
 
 ``` r
@@ -491,9 +487,37 @@ legend(x="bottomright", legend=c("min", "ave", "max"),
      fill=colorRampPalette(brewer.pal(8, "Oranges"))(3))
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-87-1.png)<!-- --> Let’s check
-if there are any linear dependency between current temperature and
-observed `aquis` values.
+![](Readme_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
+
+Let’s looks at correlation matrix for all numerical variables.
+
+``` r
+cor(data)
+```
+
+    ##                    aqius      aqicn   temp_cels    humidity  wind_speed
+    ## aqius         1.00000000  0.8533782  0.21514732 -0.24824007 -0.06529375
+    ## aqicn         0.85337824  1.0000000  0.16024627 -0.54899109  0.21240707
+    ## temp_cels     0.21514732  0.1602463  1.00000000 -0.28016648  0.40009458
+    ## humidity     -0.24824007 -0.5489911 -0.28016648  1.00000000 -0.56450843
+    ## wind_speed   -0.06529375  0.2124071  0.40009458 -0.56450843  1.00000000
+    ## atm_pressure -0.11770261 -0.2369584  0.07239776 -0.04265217 -0.07745534
+    ##              atm_pressure
+    ## aqius         -0.11770261
+    ## aqicn         -0.23695837
+    ## temp_cels      0.07239776
+    ## humidity      -0.04265217
+    ## wind_speed    -0.07745534
+    ## atm_pressure   1.00000000
+
+From the matrix above, it could be seen that there are some positive
+linear correlation between `aqius` and `atm_pressure`, `aqius` and
+`temp_cels`, `aqicn` and `temp_cels`, `aqicn` and `atm_pressure`. There
+are some negative linear correlation between `aqius` and `wind_speed`,
+`aqicn` and `humidity`, `aqicn` and `wind_speed`.
+
+Let’s check if there are any linear dependency between current
+temperature and observed `aquis` values.
 
 ``` r
 ggplot(all, aes(x = temp_cels, y = aqius)) +
@@ -506,17 +530,17 @@ ggplot(all, aes(x = temp_cels, y = aqius)) +
        y = "AQIUS")  
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-88-1.png)<!-- -->
+![](Readme_files/figure-gfm/unnamed-chunk-21-1.png)<!-- -->
 
 As, it could be seen from the graph above, there are might be some
 relationship between temperature and observed `aquis` values. The higher
 the temperature, the higher the `aquis` values.
 
-### 1.4.2 EDA for the US states
+### EDA for the US states
 
 Now, let’s look at several states across `USA` and compare air quality.
-Chosen states: California, Colorado, Minnesota, Florida and Michigan.
-Sample size for each state is equal to `5`.
+Chosen states: *California*, *Colorado*, *Minnesota*, *Florida* and
+*Michigan*. Sample size for each state is equal to `5`.
 
 Reading data for each state using function `get_air_quality_per_city`:
 
@@ -537,19 +561,23 @@ all_per_state
 ```
 
     ## # A tibble: 25 × 9
-    ##    aqius aqicn city                              state    country temp_cels humidity wind_speed atm_pressure
-    ##    <int> <int> <chr>                             <chr>    <chr>       <int>    <int>      <dbl>        <int>
-    ##  1    24     8 Harbor Springs                    Michigan USA            17       91       1.54         1024
-    ##  2    48    17 Ypsilanti                         Michigan USA            15       92       0            1024
-    ##  3    77    35 Milford                           Michigan USA            15       94       2.13         1024
-    ##  4    53    19 Caro                              Michigan USA            15       82       0            1025
-    ##  5    46    16 Saginaw                           Michigan USA            16       87       0            1021
-    ##  6    31    11 Miami-fort Lauderdale-miami Beach Florida  USA            25       95       2.57         1015
-    ##  7    18     6 Royal Palm Beach                  Florida  USA            25       93       2.57         1015
-    ##  8    15     8 Delray Beach                      Florida  USA            25       95       1.54         1016
-    ##  9     4     1 Avon Park                         Florida  USA            24       94       4.15         1016
-    ## 10    21     7 Pace                              Florida  USA            24       71       2.57         1018
+    ##    aqius aqicn city     state country temp_cels humidity wind_speed atm_pressure
+    ##    <int> <int> <chr>    <chr> <chr>       <int>    <int>      <dbl>        <int>
+    ##  1    57    21 Harbor … Mich… USA            17       92       2.57         1023
+    ##  2    36    12 Whiteha… Mich… USA            18       86       0.89         1025
+    ##  3    70    30 Milford  Mich… USA            17       91       1.51         1024
+    ##  4    60    24 Caro     Mich… USA            17       82       0            1025
+    ##  5    49    17 Rogers … Mich… USA            18       91       2.06         1023
+    ##  6    19    11 Miami    Flor… USA            26       90       2.24         1013
+    ##  7    17     6 Royal P… Flor… USA            26       87       5.66         1013
+    ##  8    29    10 Crystal… Flor… USA            24       79       4.12         1018
+    ##  9    17     6 Pace     Flor… USA            24       60       3.6          1018
+    ## 10    21     7 Rivervi… Flor… USA            25       85       8.23         1016
     ## # ℹ 15 more rows
+
+Now, let’s use the same rules as outlined above, to create categorical
+variables `aqius_category`, `aqicn_category` and `humidity_category` and
+display updated data frame.
 
 ``` r
 all_per_state <- all_per_state %>%
@@ -572,19 +600,23 @@ all_per_state
 ```
 
     ## # A tibble: 25 × 12
-    ##    aqius aqicn city         state country temp_cels humidity wind_speed atm_pressure aqius_category aqicn_category humidity_category
-    ##    <int> <int> <chr>        <chr> <chr>       <int>    <int>      <dbl>        <int> <chr>          <chr>          <chr>            
-    ##  1    24     8 Harbor Spri… Mich… USA            17       91       1.54         1024 good           excellent      high             
-    ##  2    48    17 Ypsilanti    Mich… USA            15       92       0            1024 good           excellent      high             
-    ##  3    77    35 Milford      Mich… USA            15       94       2.13         1024 moderate       good           high             
-    ##  4    53    19 Caro         Mich… USA            15       82       0            1025 moderate       good           high             
-    ##  5    46    16 Saginaw      Mich… USA            16       87       0            1021 good           excellent      high             
-    ##  6    31    11 Miami-fort … Flor… USA            25       95       2.57         1015 good           excellent      high             
-    ##  7    18     6 Royal Palm … Flor… USA            25       93       2.57         1015 good           excellent      high             
-    ##  8    15     8 Delray Beach Flor… USA            25       95       1.54         1016 good           excellent      high             
-    ##  9     4     1 Avon Park    Flor… USA            24       94       4.15         1016 good           excellent      high             
-    ## 10    21     7 Pace         Flor… USA            24       71       2.57         1018 good           excellent      high             
+    ##    aqius aqicn city     state country temp_cels humidity wind_speed atm_pressure
+    ##    <int> <int> <chr>    <chr> <chr>       <int>    <int>      <dbl>        <int>
+    ##  1    57    21 Harbor … Mich… USA            17       92       2.57         1023
+    ##  2    36    12 Whiteha… Mich… USA            18       86       0.89         1025
+    ##  3    70    30 Milford  Mich… USA            17       91       1.51         1024
+    ##  4    60    24 Caro     Mich… USA            17       82       0            1025
+    ##  5    49    17 Rogers … Mich… USA            18       91       2.06         1023
+    ##  6    19    11 Miami    Flor… USA            26       90       2.24         1013
+    ##  7    17     6 Royal P… Flor… USA            26       87       5.66         1013
+    ##  8    29    10 Crystal… Flor… USA            24       79       4.12         1018
+    ##  9    17     6 Pace     Flor… USA            24       60       3.6          1018
+    ## 10    21     7 Rivervi… Flor… USA            25       85       8.23         1016
     ## # ℹ 15 more rows
+    ## # ℹ 3 more variables: aqius_category <chr>, aqicn_category <chr>,
+    ## #   humidity_category <chr>
+
+Create 2-way contingency table for `aqius_category` vs `state`.
 
 ``` r
 table(all_per_state$aqius_category, all_per_state$state)
@@ -592,8 +624,14 @@ table(all_per_state$aqius_category, all_per_state$state)
 
     ##           
     ##            California Colorado Florida Michigan Minnesota
-    ##   good              5        4       5        3         1
-    ##   moderate          0        1       0        2         4
+    ##   good              5        5       5        2         4
+    ##   moderate          0        0       0        3         1
+
+Based on the table above, Michigan has 4 states out of 5 with `moderate`
+air quality. California, Colorado and Florida have all 5 cities with
+`good` air quality.
+
+Create 2-way contingency table for `aqicn_category` vs `state`.
 
 ``` r
 table(all_per_state$aqicn_category, all_per_state$state)
@@ -601,8 +639,14 @@ table(all_per_state$aqicn_category, all_per_state$state)
 
     ##            
     ##             California Colorado Florida Michigan Minnesota
-    ##   excellent          5        4       5        3         1
-    ##   good               0        1       0        2         4
+    ##   excellent          5        5       5        2         4
+    ##   good               0        0       0        3         1
+
+Based on the table above, Michigan has 4 states out of 5 with `good` air
+quality.
+
+Create 2-way contingency table for `aqius_category` vs
+`humidity_category`.
 
 ``` r
 table(all_per_state$aqius_category, all_per_state$humidity_category)
@@ -610,82 +654,157 @@ table(all_per_state$aqius_category, all_per_state$humidity_category)
 
     ##           
     ##            high low normal
-    ##   good       14   3      1
-    ##   moderate    5   0      2
+    ##   good       10   5      6
+    ##   moderate    4   0      0
+
+Most of the observations with `good` air quality are from observations
+with `high` humidity.
+
+Create 2-way contingency table for `aqicn_category` vs
+`humidity_category`.
+
+``` r
+table(all_per_state$aqicn_category, all_per_state$humidity_category)
+```
+
+    ##            
+    ##             high low normal
+    ##   excellent   10   5      6
+    ##   good         4   0      0
+
+Most of the observations with `exellent` air quality are from
+observations with `high` humidity.
+
+Let’s looks at correlation matrix for all numerical variables.
+
+``` r
+data <- as.matrix(all_per_state %>% select(aqius, aqicn, temp_cels, humidity, wind_speed, atm_pressure))
+cor(data)
+```
+
+    ##                   aqius      aqicn  temp_cels   humidity wind_speed
+    ## aqius         1.0000000  0.9213696 -0.4500791  0.7134753 -0.5816052
+    ## aqicn         0.9213696  1.0000000 -0.3682758  0.6523935 -0.5157466
+    ## temp_cels    -0.4500791 -0.3682758  1.0000000 -0.2194810  0.6095188
+    ## humidity      0.7134753  0.6523935 -0.2194810  1.0000000 -0.3068611
+    ## wind_speed   -0.5816052 -0.5157466  0.6095188 -0.3068611  1.0000000
+    ## atm_pressure  0.7825955  0.6379802 -0.3907240  0.6253182 -0.5996831
+    ##              atm_pressure
+    ## aqius           0.7825955
+    ## aqicn           0.6379802
+    ## temp_cels      -0.3907240
+    ## humidity        0.6253182
+    ## wind_speed     -0.5996831
+    ## atm_pressure    1.0000000
+
+From the matrix above, it could be seen that there are some positive
+linear correlation between `aqius` and `atm_pressure`, `aqius` and
+`temp_cels`, `aqius` and `humidity`, `aqicn` and `temp_cels`, `aqicn`
+and `atm_pressure`, `aqicn` and `humidity`. There are some negative
+linear correlation between `aqius` and `wind_speed`, `aqicn` and
+`wind_speed`.
+
+Now, let’s group by `state` and calculate `aqius` mean, `aqicn` mean and
+standard deviations for each group.
 
 ``` r
 result <- all_per_state %>%
   group_by(state) %>%
-  summarize(mean_aqius = mean(aqius), mean_aqicn = mean(aqicn)) 
+  summarize(mean_aqius = mean(aqius), 
+            mean_aqicn = mean(aqicn), 
+            sd_aquis = sd(aqius),
+            sd_aqicn = sd(aqicn)) 
 result
 ```
 
-    ## # A tibble: 5 × 3
-    ##   state      mean_aqius mean_aqicn
-    ##   <chr>           <dbl>      <dbl>
-    ## 1 California       20.6        7.2
-    ## 2 Colorado         18.8        7.2
-    ## 3 Florida          17.8        6.6
-    ## 4 Michigan         49.6       19  
-    ## 5 Minnesota        56.2       22.2
+    ## # A tibble: 5 × 5
+    ##   state      mean_aqius mean_aqicn sd_aquis sd_aqicn
+    ##   <chr>           <dbl>      <dbl>    <dbl>    <dbl>
+    ## 1 California       16.8        7.6     3.35     3.78
+    ## 2 Colorado          8.8        3.2     5.93     2.17
+    ## 3 Florida          20.6        8       4.98     2.35
+    ## 4 Michigan         54.4       20.8    12.7      6.83
+    ## 5 Minnesota        42.6       18.4    15.4      8.38
 
-``` r
-all_per_state
-```
-
-    ## # A tibble: 25 × 12
-    ##    aqius aqicn city         state country temp_cels humidity wind_speed atm_pressure aqius_category aqicn_category humidity_category
-    ##    <int> <int> <chr>        <chr> <chr>       <int>    <int>      <dbl>        <int> <chr>          <chr>          <chr>            
-    ##  1    24     8 Harbor Spri… Mich… USA            17       91       1.54         1024 good           excellent      high             
-    ##  2    48    17 Ypsilanti    Mich… USA            15       92       0            1024 good           excellent      high             
-    ##  3    77    35 Milford      Mich… USA            15       94       2.13         1024 moderate       good           high             
-    ##  4    53    19 Caro         Mich… USA            15       82       0            1025 moderate       good           high             
-    ##  5    46    16 Saginaw      Mich… USA            16       87       0            1021 good           excellent      high             
-    ##  6    31    11 Miami-fort … Flor… USA            25       95       2.57         1015 good           excellent      high             
-    ##  7    18     6 Royal Palm … Flor… USA            25       93       2.57         1015 good           excellent      high             
-    ##  8    15     8 Delray Beach Flor… USA            25       95       1.54         1016 good           excellent      high             
-    ##  9     4     1 Avon Park    Flor… USA            24       94       4.15         1016 good           excellent      high             
-    ## 10    21     7 Pace         Flor… USA            24       71       2.57         1018 good           excellent      high             
-    ## # ℹ 15 more rows
+Let’s check if there are any linear dependency between wind speed and
+observed `aquis` values.
 
 ``` r
 ggplot(all_per_state, aes(x = wind_speed, y = aqius)) +
-  geom_point() +                  # Add scatter points
-  geom_smooth(method = "lm",      # Add a linear regression line
-              formula = y ~ x,    # Regression formula
-              se = TRUE) +      # Don't display confidence interval
-  labs(title = "Temperature vs AQIUS",  # Main title
-       x = "Wind speed",              # X-axis label
+  geom_point() +                 
+  geom_smooth(method = "lm", 
+              formula = y ~ x,
+              se = TRUE) + 
+  labs(title = "Temperature vs AQIUS", 
+       x = "Wind speed",
        y = "AQIUS")  
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-95-1.png)<!-- -->
+![](Readme_files/figure-gfm/unnamed-chunk-31-1.png)<!-- -->
+
+As it could be seen from the graph, the stronger the wind, the lower the
+`aqius` values.
+
+Let’s check if there are any linear dependency between temperature and
+observed `aquis` values.
 
 ``` r
 ggplot(all_per_state, aes(x = temp_cels, y = aqius)) +
-  geom_point() +                  # Add scatter points
-  geom_smooth(method = "lm",      # Add a linear regression line
-              formula = y ~ x,    # Regression formula
-              se = TRUE) +      # Don't display confidence interval
-  labs(title = "Temperature vs AQIUS",  # Main title
-       x = "Temperature",              # X-axis label
+  geom_point() + 
+  geom_smooth(method = "lm", 
+              formula = y ~ x,
+              se = TRUE) + 
+  labs(title = "Temperature vs AQIUS", 
+       x = "Temperature", 
        y = "AQIUS")  
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-96-1.png)<!-- -->
+![](Readme_files/figure-gfm/unnamed-chunk-32-1.png)<!-- -->
+
+As it could be seen from the graph above, the higher the temperature,
+the higher `aqius` values.
+
+Let’s check if there are any linear dependency between humidity level
+and observed `aquis` values.
 
 ``` r
 ggplot(all_per_state, aes(x = humidity, y = aqius)) +
-  geom_point() +                  # Add scatter points
-  geom_smooth(method = "lm",      # Add a linear regression line
-              formula = y ~ x,    # Regression formula
-              se = TRUE) +      # Don't display confidence interval
-  labs(title = "Temperature vs AQIUS",  # Main title
-       x = "Humidity",              # X-axis label
-       y = "AQIUS")  
+  geom_point() + 
+  geom_smooth(method = "lm",
+              formula = y ~ x, 
+              se = TRUE) + 
+  labs(title = "Humidity vs AQIUS", 
+       x = "Humidity",
+       y = "AQIUS") 
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-97-1.png)<!-- -->
+![](Readme_files/figure-gfm/unnamed-chunk-33-1.png)<!-- -->
+
+As it could be seen from the graph above, there is may be some linear
+relationship between humidity levels and `aqius` values. The higher the
+humidity, the higher the `aquis` values.
+
+Let’s check if there are any linear dependency between atmospheric
+pressure and observed `aquis` values.
+
+``` r
+ggplot(all_per_state, aes(x = atm_pressure, y = aqius)) +
+  geom_point() + 
+  geom_smooth(method = "lm",
+              formula = y ~ x, 
+              se = TRUE) + 
+  labs(title = "Atmospheric pressure vs AQIUS", 
+       x = "Atmospheric pressure in hPa",
+       y = "AQIUS") 
+```
+
+![](Readme_files/figure-gfm/unnamed-chunk-34-1.png)<!-- -->
+
+As it could be seen from the graph above, the higher the atmospheric
+pressure, the higher the `aqius`.
+
+Let’s look at `aqius` distribution for each `state`. Creating box plot
+for `aqius` per `state`.
 
 ``` r
 ggplot(all_per_state, aes(x = state, y = aqius, fill = state)) +
@@ -694,4 +813,17 @@ ggplot(all_per_state, aes(x = state, y = aqius, fill = state)) +
   theme_minimal()
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-98-1.png)<!-- -->
+![](Readme_files/figure-gfm/unnamed-chunk-35-1.png)<!-- -->
+
+## Summary
+
+At this project we created functions to query **IQAir APIs** to retrieve
+data quality and weather metrics per country, state and city. Due to
+free account limitations, small samples were derived for several
+countries across the globe and several states across the United States.
+For both data frames EDA was conducted. The EDA showed that:
+
+- there are negative linear correlation between wind speed and air
+  quality
+- air quality is better when humidity level is high
+- air quality is deacresing when atmospheric pressure is increasing.
