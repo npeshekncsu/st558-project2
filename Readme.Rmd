@@ -46,7 +46,7 @@ key = '97d5c2b8-7656-4974-827e-9d59486f7777'
 
 ## Functions for reading data from IQAir APIs
 
-This section is dedicated for helper functions developed for easy HTTP requests to IQAir APIs. 
+This section is dedicated for functions developed for `IQAir APIs` interaction. 
 
 
 ### Function to get states
@@ -251,6 +251,8 @@ get_air_quality_per_country <- function(country,
 
 ## Exploratory Data Analysis
 
+EDA analysis will be done on countries level and, for the United States, on states level.
+
 ### EDA for countries
 
 
@@ -308,7 +310,7 @@ all <- all %>%
  all 
 ```
 
-*Note: in the following sections I will be doing EDA and results interpretation. Given the data, I am retrieving every time I render the document, is real time data, it could be some discrepancies between observed values and I my interpretation, but I will try my best to be consistent with values and interpretation.*
+*Note: in the following sections I will be doing EDA and results interpretation. Given the data, I am retrieving every time I render the document, is real-time data, it could be some discrepancies between observed values and I my interpretation, but I will try my best to be consistent with values and interpretation.*
 
 Create 2-way contingency table for `aqius_category` vs `country`.
 
@@ -322,6 +324,7 @@ Create 2-way contingency table for `aqicn_category` vs `country`.
 ```{r}
 table(all$aqicn_category, all$country)
 ```
+
 Based on the `aqicn` values, all selected cities for all countries, except `China` have `excellent` air quality.
 
 Create 2-way contingency table for `aqius_category` vs `humidity_category`.
@@ -340,7 +343,7 @@ table(all$aqicn_category, all$humidity_category)
 Based on the two tables above, the most observations for the `excellent` and `good` air quality are for the `high` humidity level.
 
 
-Now, let's group by `country` and calculate `aqius` mean, `aqicn` mean and standard deviations for each group.
+Now, let's group data by `country` and calculate `aqius` mean, `aqicn` mean and standard deviations for each group.
 
 ```{r}
 result <- all %>%
@@ -370,7 +373,7 @@ ggplot(result, aes(x = country, y = mean_aqicn)) +
   labs(title = "Means of AQICN per country", x = "Country", y = "Mean of AQUCN")
 ```
 
-The graphs above shows means for the `aqius` and `aqicn`. `China` has the highest values for `aqius` and `aqicn`, while `Australia` has the lowest values for `aqius` and `aqicn`.
+The graphs above shows means for the `aqius` and `aqicn` for the selected coutries. `China` has the highest values for `aqius` and `aqicn`, while `Australia` has the lowest values for `aqius` and `aqicn`.
 
 Let's look at `aqius` distribution for each country. Creating box plot for `aqius` per `country`.
 
@@ -423,7 +426,7 @@ As, it could be seen from the graph above, there are might be some relationship 
 
 ### EDA for the US states
 
-Now, let's look at several states across `USA` and compare air quality. Chosen states: *California*, *Colorado*, *Minnesota*, *Florida* and *Michigan*. Sample size for each state is equal to `5`.
+Now, let's look at several states across `USA` and compare air quality in the context . Chosen states: *California*, *Colorado*, *Minnesota*, *Florida* and *Michigan*. Sample size for each state is equal to `5`.
 
 
 Reading data for each state using function `get_air_quality_per_city`:
@@ -525,7 +528,7 @@ result
 
 
 
-Let's check if there are any linear dependency between wind speed and observed `aquis` values.
+Let's look at linear relationship between wind speed and observed `aquis` values.
 
 
 ```{r}
@@ -601,11 +604,13 @@ ggplot(all_per_state, aes(x = state, y = aqius, fill = state)) +
 
 ## Summary
 
-At this project we created functions to query **IQAir APIs** to retrieve data quality and weather metrics per country, state and city. Due to free account limitations, small samples were derived for several countries across the globe and several states across the United States.  For both data frames EDA was conducted. The EDA showed that:
+At this project, functions to interact with **IQAir APIs** were created. Functions allow to retrieve data quality and weather metrics per country, state and city. Due to free account limitations, small samples were derived for several countries across the globe and several states across the United States.  For both data sets EDA was conducted. The EDA showed that:
 
   - there are negative linear correlation between wind speed and air quality
   - air quality is better when humidity level is high
   - air quality is decreasing when atmospheric pressure is increasing.
+  
+**IQAir APIs** are more suitable to retrieve granular information per city. In order to retrieve large sample of the data, many API calls should be done. 
   
 
 
