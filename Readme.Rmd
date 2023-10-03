@@ -260,7 +260,7 @@ Let's look at air quality and weather metrics for different countries across the
 
 *Note: Sample size and set of countries chosen to be small due to API limitations and time required to render the whole document* 
 
-```{r}
+```{r, cache=TRUE}
 sample = 5
 air_usa = get_air_quality_per_country(country = 'USA', sample_size = sample)
 air_china = get_air_quality_per_country(country = 'China', sample_size = sample)
@@ -431,7 +431,7 @@ Now, let's look at several states across `USA` and compare air quality in the co
 
 Reading data for each state using function `get_air_quality_per_city`:
 
-```{r}
+```{r, cache=TRUE}
 sample = 5
 air_california = get_air_quality_per_city(country = 'USA', state = 'California', sample_size = sample)
 air_colorado = get_air_quality_per_city(country = 'USA', state = 'Colorado', sample_size = sample)
