@@ -1,5 +1,4 @@
-ST-558 Project 2 <br> Vignette for reading and summarizing data from an
-IQAir APIs
+ST-558 Project 2 (Reading and summarizing data from an IQAir APIs)
 ================
 Nataliya Peshekhodko
 2023-10-03

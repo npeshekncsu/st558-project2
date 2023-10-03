@@ -1,5 +1,5 @@
 ---
-title: "ST-558  Project 2 <br> Vignette for reading and summarizing data from an IQAir APIs"
+title: "ST-558  Project 2 (Reading and summarizing data from an IQAir APIs)"
 author: "Nataliya Peshekhodko"
 date: "`r Sys.Date()`"
 output: github_document
