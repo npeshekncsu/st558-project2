@@ -1,5 +1,5 @@
 ---
-title: "ST-558, Project 2"
+title: "ST-558  Project 2 <br> Vignette for reading and summarizing data from an IQAir APIs"
 author: "Nataliya Peshekhodko"
 date: "`r Sys.Date()`"
 output: github_document
@@ -9,13 +9,14 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Vignette for reading and summarizing data from an IQAir APIs
+# Overall Goal
 
-## Overall Goal
+Vignettes are explanations of concepts, packages, or other topics that interweave text, code, and output. Our project's goal is to create a vignette focused on interacting with the [IQAir APIs](https://www.iqair.com/dashboard/api) using custom functions to query, parse, and retrieve well-structured data. After the functions are available, we conduct basic exploratory data analysis on the data obtained from API endpoints. 
 
-Vignettes are explanations of some concept, package, etc. with text, code, and output interweaved. Our goal with this project is to create a vignette about contacting an [IQAir APIs](https://www.iqair.com/dashboard/api) using custom functions to query, parse, and return well-structured data. Once functions are available, basic exploratory data analysis is performed on data returned by API endpoints. IQAir APIs provide information about **real time air quality data and weather metrics**.
 
-## Packages
+The **IQAir APIs** provide information about **real-time air quality** and **weather metrics**.
+
+# Packages
 
 Packages required to run code included in that analysis:
 
@@ -37,19 +38,19 @@ library(RColorBrewer)
   - `RColorBrewer` - provides color schemes for maps
   
 
-Define variable for API key required for the authentication during HTTP request:
+
+# Functions for reading data from IQAir APIs
+
+This section is dedicated for functions developed for `IQAir APIs` interaction. 
+
+Create variable with API key required for the authentication during HTTP request:
 
 ```{r}
 key = '97d5c2b8-7656-4974-827e-9d59486f7777'
 ```
 
 
-## Functions for reading data from IQAir APIs
-
-This section is dedicated for functions developed for `IQAir APIs` interaction. 
-
-
-### Function to get states
+## Function to get states
 
 Function to retrieve `states` based on the `country` name. States returned as a list.
 
@@ -66,7 +67,7 @@ get_states <- function(country, api_key = key) {
 ```
 
 
-### Function to get cities
+## Function to get cities
 
 Function to get `cities` based on the provided `country` and `state`. Cities returned as a list.
 
@@ -84,14 +85,14 @@ get_cities <- function(country, state, api_key = key) {
 ```
 
 
-### Function Get air quality and weather metrics based on country, state and city
+## Function get air quality and weather metrics based on the country, state and city
 
 Function returns air quality based on the `country`, `state` and `city`. 
 
 If `city` is not provided, random sample of the size `sample_size` will be chosen from the cities which belong to the `state`. 
 
 
-If `weather_metrics = TRUE` in addition to air quality metrics, weather metrics like, temperature, humidity, wind speed and atmospheric pressure will be returned. 
+If `weather_metrics = TRUE` in addition to air quality metrics, weather metrics like, `temperature`, `humidity`, `wind speed` and `atmospheric pressure` will be returned. 
 
 Function returns data frame in `tibble` format with following columns:
 
@@ -187,12 +188,12 @@ get_air_quality_per_city <- function(country,
 ```
 
 
-### Function to get air quality and weather metrics for country
+## Function to get air quality and weather metrics for country
 
-Function returns air quality and weather metrics based on the country name. Random sample of the size `sample_size` is thrown from from the states which belongs to the country. For each state, random city is selected and metrics returned.
+Function returns air quality and weather metrics based on the country name. Random sample of the size `sample_size` is selected from from the states which belongs to the country. A random city is selected for each state, and metrics are then retrieved.
 
 
-Functions returns data frame in `tibble` format with following columns:
+Function returns data frame in `tibble` format with following columns:
 
   - `country`
   - `state`
@@ -249,11 +250,11 @@ get_air_quality_per_country <- function(country,
 ```
 
 
-## Exploratory Data Analysis
+# Exploratory Data Analysis
 
-EDA analysis will be done on countries level and, for the United States, on states level.
+EDA analysis will be conducted at the country level and, for the United States, at the state level.
 
-### EDA for countries
+## EDA for countries
 
 
 Let's look at air quality and weather metrics for different countries across the globe. Chosen countries: **China**, **USA**, **Poland**, **Australia** and **Norway**.
@@ -284,11 +285,12 @@ Now, we need to create categorical variables for `aqius`, `aqicn` and `humidity`
 
 If `aqius` value is less than **50**, the air quality is considered to be `good`. If `aqius` value is greater or equal **50** and less or equal **100**,  the air quality is considered to be `moderate`. If `aquis` value is greater than **100**, the air quality is considered `unhealthy`.
 
-If `aqicn` value is less than **50**, the air quality is considered to be `excellent`, if `aqicn` value is greater or equal **50** and lees or equal **100**, the air quality is considered to be `good`.  If `aqicn` value is greater than **100**, the air quality is considered `polluted`.
+If `aqicn` value is less than **50**, the air quality is considered to be `excellent`, if `aqicn` value is greater or equal **50** and less or equal **100**, the air quality is considered to be `good`.  If `aqicn` value is greater than **100**, the air quality is considered `polluted`.
 
 If `humidity` level is less or equal **40%**, it is considered `low`. If `humidity` level is greater than **40%** and less than or equal to **60%**, it is considered `normal`. If `humidity` is greater than **60%**, it is considered `high`.
 
 Creating new categorical variables based on the rules outlined above and displaying updated data frame.
+
 
 ```{r}
 all <- all %>%
@@ -310,7 +312,6 @@ all <- all %>%
  all 
 ```
 
-*Note: in the following sections I will be doing EDA and results interpretation. Given the data, I am retrieving every time I render the document, is real-time data, it could be some discrepancies between observed values and I my interpretation, but I will try my best to be consistent with values and interpretation.*
 
 Create 2-way contingency table for `aqius_category` vs `country`.
 
@@ -340,7 +341,7 @@ Create 2-way contingency table for `aqicn_category` vs `humidity_category`.
 table(all$aqicn_category, all$humidity_category)
 ```
 
-Based on the two tables above, the most observations for the `excellent` and `good` air quality are for the `high` humidity level.
+According to the two tables above, the highest number of observations for `excellent` and `good` air quality is associated with high humidity levels.
 
 
 Now, let's group data by `country` and calculate `aqius` mean, `aqicn` mean and standard deviations for each group.
@@ -383,6 +384,9 @@ ggplot(all, aes(x = country, y = aqius, fill = country)) +
   labs(title = "AQIUS values distribution per country", x = "Country", y = "AQIUS") +
   theme_minimal()
 ```
+
+According to the graph above, China has the largest median for `aqius` and the largest standard deviation among the other selected countries.
+
 Creating heatmap for numerical variables
 
 ```{r}
@@ -404,7 +408,7 @@ Let's looks at correlation matrix for all numerical variables.
 cor(data)
 ```
 
-From the matrix above, it could be seen that there are some positive linear correlation between `aqius` and `atm_pressure`, `aqius` and `temp_cels`, `aqicn` and `temp_cels`, `aqicn` and `atm_pressure`.  There are some negative linear correlation between `aqius` and `wind_speed`, `aqicn` and `humidity`, `aqicn` and `wind_speed`.
+From the matrix above, it could be seen that there are some positive linear correlation between `aqius` and `atm_pressure`, `aqius` and `temp_cels`, `aqicn` and `temp_cels`.  There are some negative linear correlation between `aqius` and `wind_speed`, `aqius` and `humidity`, `aqicn` and `humidity`, `aqicn` and `wind_speed`.
 
 
 Let's check if there are any linear dependency between current temperature and observed `aquis` values.
@@ -420,11 +424,11 @@ ggplot(all, aes(x = temp_cels, y = aqius)) +
        y = "AQIUS")  
 ```
 
-As, it could be seen from the graph above, there are might be some relationship between temperature and observed `aquis` values. The higher the temperature, the higher the `aquis` values.
+As, it could be seen from the graph above, there are might be some relationship between observed `temperature` and observed `aquis` values. The higher the temperature, the higher the `aquis` values.
 
 
 
-### EDA for the US states
+## EDA for the US states
 
 Now, let's look at several states across `USA` and compare air quality in the context . Chosen states: *California*, *Colorado*, *Minnesota*, *Florida* and *Michigan*. Sample size for each state is equal to `5`.
 
@@ -478,14 +482,14 @@ Create 2-way contingency table for `aqius_category` vs `state`.
 table(all_per_state$aqius_category, all_per_state$state)
 ```
 
-Based on the table above, Michigan has 4 states out of 5 with `moderate` air quality. California, Colorado and Florida have all 5 cities with `good` air quality. 
+Based on the table above, `Florida` has 3 states out of 5 with `unhealthy` air quality. `California` and `Colorado` have all states from the sample with `good` air quality.
 
 Create 2-way contingency table for `aqicn_category` vs `state`.
 
 ```{r}
 table(all_per_state$aqicn_category, all_per_state$state)
 ```
-Based on the table above, Michigan has 4 states out of 5 with `good` air quality.
+Based on the table above, `Florida` has 3 states out of 5 with `polluted` air quality. `California` and `Colorado` have all states from the sample with `excellent` air quality.
 
 
 Create 2-way contingency table for `aqius_category` vs `humidity_category`.
@@ -494,7 +498,8 @@ Create 2-way contingency table for `aqius_category` vs `humidity_category`.
 ```{r}
 table(all_per_state$aqius_category, all_per_state$humidity_category)
 ```
-Most of the observations with `good` air quality are from observations with `high` humidity. 
+
+Most of the observations with `good` air quality are from observations with `normal` humidity. 
 
 Create 2-way contingency table for `aqicn_category` vs `humidity_category`.
 
@@ -502,7 +507,7 @@ Create 2-way contingency table for `aqicn_category` vs `humidity_category`.
 ```{r}
 table(all_per_state$aqicn_category, all_per_state$humidity_category)
 ```
-Most of the observations with `exellent` air quality are from observations with `high` humidity. 
+Most of the observations with `excellent` air quality are from observations with `normal` humidity. 
 
 Let's looks at correlation matrix for all numerical variables.
 
@@ -511,7 +516,7 @@ data <- as.matrix(all_per_state %>% select(aqius, aqicn, temp_cels, humidity, wi
 cor(data)
 ```
 
-From the matrix above, it could be seen that there are some positive linear correlation between `aqius` and `atm_pressure`, `aqius` and `temp_cels`, `aqius` and `humidity`, `aqicn` and `temp_cels`, `aqicn` and `atm_pressure`, `aqicn` and `humidity`.  There are some negative linear correlation between `aqius` and `wind_speed`, `aqicn` and `wind_speed`.
+From the matrix above, it could be seen that there are some positive linear correlation between  `aqius` and `temp_cels`, `aqius` and `humidity`, `aqicn` and `temp_cels`, `aqicn` and `humidity`, `aqius` and `wind_speed`, `aqicn` and `wind_speed`.  
 
 
 Now, let's group by `state` and calculate `aqius` mean, `aqicn` mean and standard deviations for each group.
@@ -527,6 +532,7 @@ result
 ```
 
 
+According to the table above, `Florida` has the highest mean values for `aqius` and `aqicn` and the highest standard deviations for both metrics.
 
 Let's look at linear relationship between wind speed and observed `aquis` values.
 
@@ -542,7 +548,8 @@ ggplot(all_per_state, aes(x = wind_speed, y = aqius)) +
        y = "AQIUS")  
 ```
 
-  As it could be seen from the graph, the stronger the wind, the lower the `aqius` values. 
+
+As it could be seen from the graph, the stronger the wind, the higher the `aqius` values. 
 
 
 Let's check if there are any linear dependency between temperature and observed `aquis` values.  
@@ -590,7 +597,7 @@ ggplot(all_per_state, aes(x = atm_pressure, y = aqius)) +
        y = "AQIUS") 
 ```
 
-As it could be seen from the graph above, the higher the atmospheric pressure, the higher the `aqius`.
+According to the graph above, there is no relationship between atmospheric pressure and the `aqius`.
 
 
 Let's look at `aqius` distribution for each `state`. Creating box plot for `aqius` per `state`.
@@ -602,13 +609,15 @@ ggplot(all_per_state, aes(x = state, y = aqius, fill = state)) +
   theme_minimal()
 ```
 
-## Summary
+According to the graph above, Florida has the highest median value for `aqius` and the largest standard deviation among the other selected states. 
 
-At this project, functions to interact with **IQAir APIs** were created. Functions allow to retrieve data quality and weather metrics per country, state and city. Due to free account limitations, small samples were derived for several countries across the globe and several states across the United States.  For both data sets EDA was conducted. The EDA showed that:
+# Summary
 
-  - there are negative linear correlation between wind speed and air quality
-  - air quality is better when humidity level is high
-  - air quality is decreasing when atmospheric pressure is increasing.
+In this project, functions were created to interact with the **IQAir APIs**. These functions allow us to retrieve data on air quality and weather metrics for countries, states, and cities. Due to limitations on free account, small samples were obtained for several countries worldwide and several states within the United States. For both data sets, exploratory data analysis was conducted, revealing the following insights:
+
+  - air quality tends to decrease with rising humidity
+  - air quality tends to decrease with rising temperatures
+  - `Florida` has the poorest air quality among the selected states, while `China` exhibits the worst air quality among the selected countries.
   
 **IQAir APIs** are more suitable to retrieve granular information per city. In order to retrieve large sample of the data, many API calls should be done. 
   
