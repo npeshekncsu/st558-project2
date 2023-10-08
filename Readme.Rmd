@@ -27,6 +27,7 @@ library(tibble)
 library(jsonlite)
 library(ggplot2)
 library(RColorBrewer)
+library(corrplot)
 ```
 
 
@@ -36,6 +37,7 @@ library(RColorBrewer)
   - `jsonlite` - required for converting JSON data from/to R objects
   - `ggplot2` - required for creating graphs
   - `RColorBrewer` - provides color schemes for maps
+  - `corrplot` - required for correlation matrix visualizing
   
 
 
@@ -358,20 +360,29 @@ result
 Based on the values above, `China` has the highest values for `aqius` and `aqicn`, while `Australia` has the lowest values for `aqius` and `aqicn`. 
 
 
-Visualizing obtained results for `aqius`.
+Visualizing means for `aqius`.
+
 
 ```{r}
-ggplot(result, aes(x = country, y = mean_aqius)) +
-  geom_bar(stat = "identity", fill = "blue", alpha = 0.5) +
+ggplot(all, aes(x = country, y = aqius)) +
+  geom_bar(stat = "summary", 
+           position = 'dodge', 
+           fun = 'mean',  
+           fill = "blue", 
+           alpha = 0.5) +
   labs(title = "Means of AQIUS per country", x = "Country", y = "Mean of AQIUS")
 ```
 
-Visualizing obtained results for `aqicn`.
+Visualizing means for `aqicn`.
 
 ```{r}
-ggplot(result, aes(x = country, y = mean_aqicn)) +
-  geom_bar(stat = "identity", fill = "red", alpha = 0.5) +
-  labs(title = "Means of AQICN per country", x = "Country", y = "Mean of AQUCN")
+ggplot(all, aes(x = country, y = aqicn)) +
+  geom_bar(stat = "summary", 
+           position = 'dodge', 
+           fun = 'mean',  
+           fill = "red", 
+           alpha = 0.5) +
+  labs(title = "Means of AQICN per country", x = "Country", y = "Mean of AQICN")
 ```
 
 The graphs above shows means for the `aqius` and `aqicn` for the selected coutries. `China` has the highest values for `aqius` and `aqicn`, while `Australia` has the lowest values for `aqius` and `aqicn`.
@@ -410,6 +421,15 @@ cor(data)
 
 From the matrix above, it could be seen that there are some positive linear correlation between `aqius` and `atm_pressure`, `aqius` and `temp_cels`, `aqicn` and `temp_cels`.  There are some negative linear correlation between `aqius` and `wind_speed`, `aqius` and `humidity`, `aqicn` and `humidity`, `aqicn` and `wind_speed`.
 
+
+Let's visualize obtained results for correlation:
+
+```{r}
+corrplot(cor(data), 
+         type="upper", 
+         method = "number",
+         tl.pos = "lt")
+```
 
 Let's check if there are any linear dependency between current temperature and observed `aquis` values.
 
@@ -482,14 +502,16 @@ Create 2-way contingency table for `aqius_category` vs `state`.
 table(all_per_state$aqius_category, all_per_state$state)
 ```
 
-Based on the table above, `Florida` has 3 states out of 5 with `unhealthy` air quality. `California` and `Colorado` have all states from the sample with `good` air quality.
+Based on the table above, `Florida`, `Colorado` and `Michigan` have all selected states with `good` air quality. `California` and `Minnesota` have 1 state out of 5 states with `moderate` air quality.
 
 Create 2-way contingency table for `aqicn_category` vs `state`.
 
 ```{r}
 table(all_per_state$aqicn_category, all_per_state$state)
 ```
-Based on the table above, `Florida` has 3 states out of 5 with `polluted` air quality. `California` and `Colorado` have all states from the sample with `excellent` air quality.
+
+
+Based on the table above, `Florida`, `Colorado` and `Michigan` have all selected states with `excellent` air quality. `California` and `Minnesota` have 1 state out of 5 states with `good` air quality.
 
 
 Create 2-way contingency table for `aqius_category` vs `humidity_category`.
@@ -499,7 +521,7 @@ Create 2-way contingency table for `aqius_category` vs `humidity_category`.
 table(all_per_state$aqius_category, all_per_state$humidity_category)
 ```
 
-Most of the observations with `good` air quality are from observations with `normal` humidity. 
+Most of the observations with `good` air quality are from observations with `high` humidity. 
 
 Create 2-way contingency table for `aqicn_category` vs `humidity_category`.
 
@@ -507,7 +529,7 @@ Create 2-way contingency table for `aqicn_category` vs `humidity_category`.
 ```{r}
 table(all_per_state$aqicn_category, all_per_state$humidity_category)
 ```
-Most of the observations with `excellent` air quality are from observations with `normal` humidity. 
+Most of the observations with `excellent` air quality are from observations with `high` humidity. 
 
 Let's looks at correlation matrix for all numerical variables.
 
@@ -516,8 +538,17 @@ data <- as.matrix(all_per_state %>% select(aqius, aqicn, temp_cels, humidity, wi
 cor(data)
 ```
 
-From the matrix above, it could be seen that there are some positive linear correlation between  `aqius` and `temp_cels`, `aqius` and `humidity`, `aqicn` and `temp_cels`, `aqicn` and `humidity`, `aqius` and `wind_speed`, `aqicn` and `wind_speed`.  
+From the matrix above, it could be seen that there are some positive linear correlation between  `aqius` and `temp_cels`. There are some negative correlation between `aqius` and `wind_speed`, `aqicn` and `wind_speed`.
 
+
+Let's visualize obtained results for correlation:
+
+```{r}
+corrplot(cor(data), 
+         type="upper", 
+         method = "number",
+         tl.pos = "lt")
+```
 
 Now, let's group by `state` and calculate `aqius` mean, `aqicn` mean and standard deviations for each group.
 
@@ -534,7 +565,7 @@ result
 
 According to the table above, `Florida` has the highest mean values for `aqius` and `aqicn` and the highest standard deviations for both metrics.
 
-Let's look at linear relationship between wind speed and observed `aquis` values.
+Let's look at linear relationship between `wind speed` and observed `aquis` values.
 
 
 ```{r}
@@ -549,7 +580,7 @@ ggplot(all_per_state, aes(x = wind_speed, y = aqius)) +
 ```
 
 
-As it could be seen from the graph, the stronger the wind, the higher the `aqius` values. 
+As it could be seen from the graph, the stronger the wind, the lower the `aqius` values. 
 
 
 Let's check if there are any linear dependency between temperature and observed `aquis` values.  
@@ -568,7 +599,7 @@ ggplot(all_per_state, aes(x = temp_cels, y = aqius)) +
 As it could be seen from the graph above, the higher the temperature, the higher `aqius` values.
 
 
-Let's check if there are any linear dependency between humidity level and observed `aquis` values. 
+Let's check if there are any linear dependency between `humidity` level and observed `aquis` values. 
 
 ```{r}
 ggplot(all_per_state, aes(x = humidity, y = aqius)) +
@@ -581,7 +612,7 @@ ggplot(all_per_state, aes(x = humidity, y = aqius)) +
        y = "AQIUS") 
 ```
 
-As it could be seen from the graph above, there is may be some linear relationship between humidity levels and `aqius` values. The higher the humidity, the higher the `aquis` values.
+As it could be seen from the graph above, there is no linear relationship between `humidity` levels and `aqius` values.
 
 
 Let's check if there are any linear dependency between atmospheric pressure and observed `aquis` values. 
@@ -597,7 +628,7 @@ ggplot(all_per_state, aes(x = atm_pressure, y = aqius)) +
        y = "AQIUS") 
 ```
 
-According to the graph above, there is no relationship between atmospheric pressure and the `aqius`.
+According to the graph above, there is no relationship (or very minor) between atmospheric pressure and the `aqius`.
 
 
 Let's look at `aqius` distribution for each `state`. Creating box plot for `aqius` per `state`.
@@ -609,15 +640,15 @@ ggplot(all_per_state, aes(x = state, y = aqius, fill = state)) +
   theme_minimal()
 ```
 
-According to the graph above, Florida has the highest median value for `aqius` and the largest standard deviation among the other selected states. 
+According to the graph above, Minnesota has the highest median value for `aqius` among selected states.
 
 # Summary
 
 In this project, functions were created to interact with the **IQAir APIs**. These functions allow us to retrieve data on air quality and weather metrics for countries, states, and cities. Due to limitations on free account, small samples were obtained for several countries worldwide and several states within the United States. For both data sets, exploratory data analysis was conducted, revealing the following insights:
 
-  - air quality tends to decrease with rising humidity
-  - air quality tends to decrease with rising temperatures
-  - `Florida` has the poorest air quality among the selected states, while `China` exhibits the worst air quality among the selected countries.
+  - air quality tends to decrease with rising temperature
+  - air quality tends to increase with increasing wind speed
+  - `Minnesota` has the poorest air quality among the selected states, while `China` exhibits the worst air quality among the selected countries.
   
 **IQAir APIs** are more suitable to retrieve granular information per city. In order to retrieve large sample of the data, many API calls should be done. 
   
